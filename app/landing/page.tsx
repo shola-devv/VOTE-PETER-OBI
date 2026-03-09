@@ -23,6 +23,8 @@ const AnimatedGrid = ({ darkMode }: { darkMode: boolean }) => {
       delay: Math.random() * 3,
     }));
     setGridLines(lines);
+    // auto darkmode here
+
   }, []);
 
   return (
@@ -112,6 +114,8 @@ export default function LandingPage() {
 const [isTyping, setIsTyping] = useState(false);
 const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
+//auto darkmode
+useEffect(()=>{setDarkMode(!darkMode)}, [])
 useEffect(() => {
   if (textareaRef.current) {
     textareaRef.current.style.height = "auto";
@@ -151,6 +155,8 @@ useEffect(() => {
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
   };
+
+
 
   return (
     <div className={`min-h-screen transition-colors duration-300 relative ${
@@ -223,10 +229,10 @@ useEffect(() => {
       </nav>
 
       {/* Hero Section */}
-      <main className="relative z-10 pt-20 sm:pt-32 pb-8 sm:pb-4 px-4 sm:px-6 lg:px-8">
+      <main className="relative z-10 pt-20 mt-12 sm:mb-8 md:mb-8 lg:mb-8 pb-8 sm:pb-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           {/* Hero Text */}
-          <div className="text-center mb-8">
+          <div className="text-center mb-32">
             <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-8 leading-tight px-4">
               <span className="text-surfaceDark dark:text-white">Understand what your smart contracts </span>
               <span className="relative inline-block">
@@ -241,12 +247,12 @@ useEffect(() => {
               </span>
               
               <br />
-              <span className="text-surfaceDark dark:text-white">Costs You Before you Deploy.</span>
+              <span className="text-surfaceDark  dark:text-white">Costs You Before you Deploy.</span>
             </h1>
             
             <div className="max-w-2xl mx-auto flex flex-col gap-2 mb-8">
               <div className="flex items-center justify-center p-2 sm:p-0">
-                <p className="text-sm sm:text-base md:text-lg lg:text-lg text-surfaceDark dark:text-gray-300 font-semibold text-center">
+                <p className="text-sm sm:text-base md:text-lg lg:text-lg text-surfaceDark  dark:text-gray-300 font-semibold text-center">
                   Instant gas estimates, complexity insights, and AI-driven gas optimisation suggestions
                 </p>
               </div>
@@ -288,9 +294,9 @@ useEffect(() => {
   </div>
 
   {/* Input Container */}
-  <div className="relative bg-surface dark:bg-slate-800 rounded-neu shadow-neu dark:shadow-neuDark p-3 sm:p-4 md:p-6 transition-all duration-300">
+  <div className="relative bg-surface dark:bg-slate-800  bg-transparent rounded-neu shadow-neu dark:shadow-neuDark p-3 sm:p-4 md:p-6  mt-12 sm:mt-32 md:mt-32 lg:mt-36 transition-all duration-300 rounded-2xl">
 
-    <label className="block text-sm sm:text-base md:text-lg font-medium text-surfaceDark dark:text-gray-300 mb-4">
+    <label className="block text-sm sm:text-base md:text-lg font-medium  text-surfaceDark dark:text-gray-300 mb-4 ">
       paste in your smart contract and AI does the magic:
     </label>
 
@@ -299,7 +305,7 @@ useEffect(() => {
 
       {/* AI Pulse */}
       <div
-        className={`absolute inset-0 rounded-2xl pointer-events-none transition-opacity duration-500 ${
+        className={`absolute inset-0 rounded-2xl pointer-events-none transition-opacity duration-500  ${
           isTyping
             ? "opacity-100 animate-pulse bg-gradient-to-r from-primary/10 via-primaryLight/10 to-primary/10"
             : "opacity-0"
@@ -312,25 +318,26 @@ useEffect(() => {
         onChange={(e) => setInputValue(e.target.value)}
         placeholder="pragma solidity..."
         rows={1}
-        className=" relative
-  w-full
-  min-h-[100px]
-  max-h-68
-  pl-4 pr-32 py-3
-  rounded-2xl
-  bg-gradient-to-br from-primaryDark/40 via-primary/30 to-primaryLight/40
-  backdrop-blur-md
-  resize-none
-  overflow-hidden
-  text-surfaceDark dark:text-white
-  placeholder-surfaceShadow dark:placeholder-gray-400
-  text-sm sm:text-base
-  transition-all duration-300
-  focus:outline-none
-
-  shadow-[8px_8px_18px_rgba(0,0,0,0.35),_-8px_-8px_18px_rgba(255,255,255,0.15)]
-  
-  focus:shadow-[inset_6px_6px_14px_rgba(0,0,0,0.4),_inset_-6px_-6px_14px_rgba(255,255,255,0.15)]"
+        className="  relative
+    w-full
+    min-h-[100px]
+    max-h-68
+    pl-4 pr-32 py-3
+    rounded-2xl
+    bg-gradient-to-br 
+      from-primaryDark/40 via-primary/30 to-primaryLight/40
+    backdrop-blur-md
+    light:bg-white/20
+    light:backdrop-blur-sm
+    resize-none
+    overflow-hidden
+    text-surfaceDark dark:text-white
+    placeholder-surfaceShadow dark:placeholder-gray-400
+    text-sm sm:text-base
+    transition-all duration-300
+    focus:outline-none
+    shadow-[8px_8px_18px_rgba(0,0,0,0.35),_-8px_-8px_18px_rgba(255,255,255,0.15)]
+    focus:shadow-[inset_6px_6px_14px_rgba(0,0,0,0.4),_inset_-6px_-6px_14px_rgba(255,255,255,0.15)] "
         onKeyDown={(e) => {
           if (e.key === "Enter" && e.metaKey) {
             handleSend();

@@ -110,27 +110,29 @@ export async function GET(request: NextRequest) {
   }
 
   // ----------------------------
-  // 4. Fetch fresh data
+  // 4. Fetch fresh data from Etherscan Gas Oracle
   // ----------------------------
-  console.log("🔄 Fetching fresh C market data...");
+  console.log("🔄 Fetching fresh gas oracle data from Etherscan...");
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), API_TIMEOUT);
 
   try {
-    const res = await fetch("https://openapiv1.coinstats.app/coins", {
-      method: "GET",
-      headers: {
-        "X-API-KEY": process.env.COINSTATS_API_KEY as string,
-        Accept: "application/json",
-      },
-      signal: controller.signal,
-    });
+    const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
+
+    if (!ETHERSCAN_API_KEY) {
+      throw new Error("Etherscan API key not configured");
+    }
+
+    const res = await fetch(
+      `https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=${ETHERSCAN_API_KEY}`,
+      { signal: controller.signal }
+    );
 
     clearTimeout(timeout);
 
     if (!res.ok) {
-      console.error("❌ CoinStats API error:", res.status);
+      console.error("❌ Etherscan API error:", res.status);
 
       if (cached) {
         return new NextResponse(
@@ -144,17 +146,46 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      throw new Error(`CoinStats API returned ${res.status}`);
+      throw new Error(`Etherscan API returned ${res.status}`);
     }
 
     const data = await res.json();
+
+    if (data.status !== "1") {
+      console.error("Etherscan returned non-success status", data);
+
+      if (cached) {
+        return new NextResponse(
+          JSON.stringify({
+            source: "cache-stale-api-error",
+            data: cached.data,
+            timestamp: cached.timestamp,
+            warning: "Using stale data due to Etherscan error",
+          }),
+          { status: 200, headers: securityHeaders() }
+        );
+      }
+
+      throw new Error("Failed to fetch gas price from Etherscan");
+    }
+
+    const result = data.result || {};
+
+    const responsePayload = {
+      safeGasPrice: result.SafeGasPrice,
+      proposeGasPrice: result.ProposeGasPrice || result.ProposeGasPrice,
+      fastGasPrice: result.FastGasPrice,
+      suggestBaseFee: result.suggestBaseFee,
+      gasUsedRatio: result.gasUsedRatio,
+      lastBlock: result.LastBlock,
+    };
 
     // Store in cache
     try {
       await redis.set(
         CACHE_KEY,
         JSON.stringify({
-          data,
+          data: responsePayload,
           timestamp: now,
         }),
         { ex: CACHE_TTL_SECONDS * 5 }
@@ -163,14 +194,10 @@ export async function GET(request: NextRequest) {
       console.warn("⚠️ Cache write error:", cacheError);
     }
 
-    return new NextResponse(
-      JSON.stringify({
-        source: "fresh",
-        data,
-        timestamp: now,
-      }),
-      { status: 200, headers: securityHeaders() }
-    );
+    return new NextResponse(JSON.stringify({ source: "fresh", data: responsePayload, timestamp: now }), {
+      status: 200,
+      headers: securityHeaders(),
+    });
   } catch (err: any) {
     clearTimeout(timeout);
 
@@ -188,20 +215,18 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      return new NextResponse(
-        JSON.stringify({
-          error: "API request timeout",
-        }),
-        { status: 504, headers: securityHeaders() }
-      );
+      return new NextResponse(JSON.stringify({ error: "API request timeout" }), {
+        status: 504,
+        headers: securityHeaders(),
+      });
     }
 
-    console.error(" Market data API error:", err);
+    console.error("Market data API error:", err);
 
     return new NextResponse(
       JSON.stringify({
-        error: "Failed to fetch market data",
-        details: err.message,
+        error: "Failed to fetch gas oracle data",
+        details: err?.message,
         timestamp: now,
       }),
       { status: 500, headers: securityHeaders() }

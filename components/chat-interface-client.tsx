@@ -149,6 +149,7 @@ export default function ChatInterfaceClient() {
     }
   };
 
+  //calls our ai api here
   const handleSend = () => {
     if (!inputValue.trim()) return;
 
