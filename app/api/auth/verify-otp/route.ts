@@ -1,23 +1,19 @@
 import { NextResponse } from "next/server";
 import connect from "@/lib/db";
 import Otp from "@/lib/models/otp";
-
 import { headers } from "next/headers";
 import bcrypt from "bcryptjs";
 
-// Simple in-memory rate limiting (for production, use Redis or a proper rate limiting service)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 
-// Rate limit: 3 requests per 5 minutes per IP
 const RATE_LIMIT_MAX = 3;
-const RATE_LIMIT_WINDOW = 5 * 60 * 1000; // 5 minutes in milliseconds
+const RATE_LIMIT_WINDOW = 5 * 60 * 1000;
 
 function checkRateLimit(identifier: string): { allowed: boolean; retryAfter?: number } {
   const now = Date.now();
   const record = rateLimitMap.get(identifier);
 
   if (!record || now > record.resetTime) {
-    // No record or window expired, create new record
     rateLimitMap.set(identifier, {
       count: 1,
       resetTime: now + RATE_LIMIT_WINDOW,
@@ -26,12 +22,10 @@ function checkRateLimit(identifier: string): { allowed: boolean; retryAfter?: nu
   }
 
   if (record.count >= RATE_LIMIT_MAX) {
-    // Rate limit exceeded
-    const retryAfter = Math.ceil((record.resetTime - now) / 1000); // seconds
+    const retryAfter = Math.ceil((record.resetTime - now) / 1000);
     return { allowed: false, retryAfter };
   }
 
-  // Increment count
   record.count++;
   return { allowed: true };
 }
@@ -39,9 +33,8 @@ function checkRateLimit(identifier: string): { allowed: boolean; retryAfter?: nu
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email } = body;
+    const { email, otp } = body;
 
-    // Validation
     if (!email) {
       return NextResponse.json(
         { success: false, message: "Email is required" },
@@ -49,12 +42,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get IP address for rate limiting
-    const headersList = headers();
+    // ✅ await headers() — Next.js 15 change
+    const headersList = await headers();
     const ip = headersList.get("x-forwarded-for") || headersList.get("x-real-ip") || "unknown";
-    const identifier = `${ip}-${email}`; // Rate limit per IP + email combo
+    const identifier = `${ip}-${email}`;
 
-    // Check rate limit
     const rateLimitCheck = checkRateLimit(identifier);
     if (!rateLimitCheck.allowed) {
       console.log(`🚫 [Send OTP] Rate limit exceeded for ${email} from ${ip}`);
@@ -64,11 +56,11 @@ export async function POST(request: Request) {
           message: `Too many requests. Please try again in ${rateLimitCheck.retryAfter} seconds.`,
           retryAfter: rateLimitCheck.retryAfter,
         },
-        { 
+        {
           status: 429,
           headers: {
-            'Retry-After': rateLimitCheck.retryAfter?.toString() || '300',
-          }
+            "Retry-After": rateLimitCheck.retryAfter?.toString() || "300",
+          },
         }
       );
     }
@@ -78,9 +70,6 @@ export async function POST(request: Request) {
 
     await connect();
 
-    // Expect client to send the OTP to verify
-    const { otp } = body;
-
     if (!otp) {
       return NextResponse.json(
         { success: false, message: "OTP is required for verification" },
@@ -88,7 +77,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Find OTP record (hashed OTP expected)
     const record = await Otp.findOne({ email: emailString });
     if (!record) {
       return NextResponse.json(
@@ -97,7 +85,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Compare provided OTP with stored (supports hashed OTPs)
     const isMatch = await bcrypt.compare(otp.toString(), record.otp);
     if (!isMatch) {
       return NextResponse.json(
@@ -106,7 +93,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Delete OTP after successful verification
     await Otp.deleteOne({ _id: record._id });
 
     return NextResponse.json(
