@@ -5,9 +5,6 @@ import { Types } from "mongoose";
 import { ratelimit } from "@/lib/rate-limit";
 import { getToken } from "next-auth/jwt";
 
-// -------------------------------------
-// Security headers
-// -------------------------------------
 const securityHeaders = {
   "X-Content-Type-Options": "nosniff",
   "X-Frame-Options": "DENY",
@@ -15,7 +12,6 @@ const securityHeaders = {
   "Content-Type": "application/json",
 };
 
-// Helper → consistent JSON response
 function json(body: any, status = 200) {
   return new NextResponse(JSON.stringify(body), {
     status,
@@ -23,49 +19,33 @@ function json(body: any, status = 200) {
   });
 }
 
-// -------------------------------------
-// Shared validation → rate limit + auth
-// -------------------------------------
 async function validateRequest(req: Request) {
-  const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1";
 
-  // Rate limit
   try {
     const { success } = await ratelimit.limit(ip);
     if (!success) return json({ message: "Rate limit exceeded" }, 429);
   } catch {
-    // fail-open (don’t block prod traffic)
+    // fail-open
   }
 
-  // Auth check
   const token = await getToken({ req: req as any });
   if (!token?.sub) return json({ message: "Unauthorized" }, 401);
 
   return token;
 }
 
-// -------------------------------------
 // GET User
-// ----------------------------------
-// GET User
-// -------------------------------------
 export const GET = async (
   request: Request,
-  context: { params: { userId: string } }
+  context: { params: Promise<{ userId: string }> }  // ← Promise
 ) => {
   try {
-    // ----------------------------
-    // 1️⃣ AUTH
-    // ----------------------------
     const token = await getToken({ req: request as any });
     if (!token?.sub) {
       return json({ message: "Unauthorized" }, 401);
     }
 
-    // ----------------------------
-    // 2️⃣ RATE LIMIT
-    // ----------------------------
     try {
       const rate = await ratelimit.limit(token.sub);
       if (!rate.success) {
@@ -75,10 +55,7 @@ export const GET = async (
       console.warn("Rate limiter unavailable, continuing:", err);
     }
 
-    // ----------------------------
-    // 3️⃣ ROUTE PARAMS
-    // ----------------------------
-    const { userId } = context.params;
+    const { userId } = await context.params;  // ← await
 
     if (!userId) {
       return json({ message: "User ID is required" }, 400);
@@ -88,16 +65,10 @@ export const GET = async (
       return json({ message: "Invalid user ID format" }, 400);
     }
 
-    // ----------------------------
-    // 4️⃣ OWNERSHIP CHECK
-    // ----------------------------
     if (userId !== token.sub) {
       return json({ message: "Forbidden" }, 403);
     }
 
-    // ----------------------------
-    // 5️⃣ DB CONNECTION
-    // ----------------------------
     try {
       await connect();
     } catch (err) {
@@ -105,9 +76,6 @@ export const GET = async (
       return json({ message: "Database connection failed" }, 500);
     }
 
-    // ----------------------------
-    // 6️⃣ FETCH USER
-    // ----------------------------
     const user: any = await User.findById(userId)
       .select("-password -__v")
       .lean();
@@ -116,9 +84,6 @@ export const GET = async (
       return json({ message: "User not found" }, 404);
     }
 
-    // ----------------------------
-    // 7️⃣ SUCCESS
-    // ----------------------------
     return json(
       {
         user: {
@@ -138,9 +103,7 @@ export const GET = async (
   }
 };
 
-// -------------------------------------
-// DELETE User
-// -------------------------------------
+// DELETE User — no dynamic params, no change needed
 export const DELETE = async (request: Request) => {
   const token = await validateRequest(request);
   if (token instanceof NextResponse) return token;
