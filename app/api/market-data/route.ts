@@ -29,7 +29,6 @@ export async function GET(request: NextRequest) {
   const ip =
     request.headers.get("x-forwarded-for")?.split(",")[0] ||
     request.headers.get("x-real-ip") ||
-    request.ip ||
     "127.0.0.1";
 
   console.log("📊 Market data request from IP:", ip);

@@ -60,13 +60,13 @@ const AnimatedGrid = ({ darkMode }: { darkMode: boolean }) => {
             }}
           >
             {/* Outer glow effect - brighter with green-200 */}
-            <div className="absolute inset-0 w-[12px] -translate-x-1/2 bg-gradient-to-b from-transparent via-green-200/90 to-transparent blur-lg" />
+            <div className="absolute inset-0 w-3 -translate-x-1/2 bg-linear-to-b from-transparent via-green-200/90 to-transparent blur-lg" />
             {/* Middle glow - brighter */}
-            <div className="absolute inset-0 w-[6px] -translate-x-1/2 bg-gradient-to-b from-transparent via-green-200 to-transparent blur-md" />
+            <div className="absolute inset-0 w-1.5 -translate-x-1/2 bg-linear-to-b from-transparent via-green-200 to-transparent blur-md" />
             {/* Inner glow - bright */}
-            <div className="absolute inset-0 w-[3px] -translate-x-1/2 bg-gradient-to-b from-transparent via-green-300 to-transparent blur-sm" />
+            <div className="absolute inset-0 w-0.75 -translate-x-1/2 bg-linear-to-b from-transparent via-green-300 to-transparent blur-sm" />
             {/* Main line - green-500 core */}
-            <div className="absolute inset-0 w-[2px] -translate-x-1/2 bg-gradient-to-b from-transparent via-green-500 to-transparent" />
+            <div className="absolute inset-0 w-0.5 -translate-x-1/2 bg-linear-to-b from-transparent via-green-500 to-transparent" />
           </motion.div>
         ))}
 
@@ -90,13 +90,13 @@ const AnimatedGrid = ({ darkMode }: { darkMode: boolean }) => {
             }}
           >
             {/* Outer glow effect - brighter with green-200 */}
-            <div className="absolute inset-0 h-[12px] -translate-y-1/2 bg-gradient-to-r from-transparent via-green-200/90 to-transparent blur-lg" />
+            <div className="absolute inset-0 h-3 -translate-y-1/2 bg-linear-to-r from-transparent via-green-200/90 to-transparent blur-lg" />
             {/* Middle glow - brighter */}
-            <div className="absolute inset-0 h-[6px] -translate-y-1/2 bg-gradient-to-r from-transparent via-green-200 to-transparent blur-md" />
+            <div className="absolute inset-0 h-1.5 -translate-y-1/2 bg-linear-to-r from-transparent via-green-200 to-transparent blur-md" />
             {/* Inner glow - bright */}
-            <div className="absolute inset-0 h-[3px] -translate-y-1/2 bg-gradient-to-r from-transparent via-green-300 to-transparent blur-sm" />
+            <div className="absolute inset-0 h-0.75 -translate-y-1/2 bg-linear-to-r from-transparent via-green-300 to-transparent blur-sm" />
             {/* Main line - green-500 core */}
-            <div className="absolute inset-0 h-[2px] -translate-y-1/2 bg-gradient-to-r from-transparent via-green-500 to-transparent" />
+            <div className="absolute inset-0 h-0.5 -translate-y-1/2 bg-linear-to-r from-transparent via-green-500 to-transparent" />
           </motion.div>
         ))}
       </div>
@@ -177,7 +177,7 @@ useEffect(() => {
               className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 xl:w-20 xl:h-20 object-contain"
             />
             {/* Brand Text */}
-            <span className="text-sm sm:text-lg font-bold bg-gradient-to-r from-primary to-primaryDark bg-clip-text dark:text-white">
+            <span className="text-sm sm:text-lg font-bold bg-linear-to-r from-primary to-primaryDark bg-clip-text dark:text-white">
               Smart Gauge
             </span>
           </div>
@@ -211,7 +211,7 @@ useEffect(() => {
     cursor-pointer
     px-6 py-2
     rounded-2xl
-    bg-gradient-to-br from-primaryDark via-primary via-green-400 to-primaryLight
+    bg-linear-to-br from-primaryDark via-primary via-green-400 to-primaryLight
     text-surfaceLight
     font-semibold
     text-sm sm:text-base md:text-lg
@@ -307,7 +307,7 @@ useEffect(() => {
       <div
         className={`absolute inset-0 rounded-2xl pointer-events-none transition-opacity duration-500  ${
           isTyping
-            ? "opacity-100 animate-pulse bg-gradient-to-r from-primary/10 via-primaryLight/10 to-primary/10"
+            ? "opacity-100 animate-pulse bg-linear-to-r from-primary/10 via-primaryLight/10 to-primary/10"
             : "opacity-0"
         }`}
       />

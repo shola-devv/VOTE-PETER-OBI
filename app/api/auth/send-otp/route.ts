@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     }
 
     // Get IP address for rate limiting
-    const headersList = headers();
+    const headersList = await headers();
     const ip = headersList.get("x-forwarded-for") || headersList.get("x-real-ip") || "unknown";
     const identifier = `${ip}-${email}`; // Rate limit per IP + email combo
 
