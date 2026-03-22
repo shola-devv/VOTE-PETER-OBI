@@ -4,7 +4,7 @@
 import Link from "next/link";
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Send, Paperclip, Mic, MessageSquare, Settings, User, LogOut, Plus, Moon, Sun, Zap } from "lucide-react";
+import { Menu, X, Send, Check, Paperclip, Mic, MessageSquare, Settings, User, LogOut, Plus, Moon, Sun, Zap, Copy } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
 
@@ -168,19 +168,12 @@ export default function ChatInterfaceClient() {
   };
 
   const formatAnalysisResponse = (data: AnalysisResponse): string => {
-    const gasSection =
-      data.gasEstimates.length > 0
-        ? `⛽ Gas Estimates:\n` +
-          data.gasEstimates
-            .map(
-              (g) =>
-                `• ${g.chainName}: $${g.estimatedGasCost} ${g.tokenSymbol} (${g.gasPrice} gwei)`
-            )
-            .join("\n")
-        : "⛽ Gas estimates unavailable right now";
+  if (data.optimizationSuggestions.includes("No valid Solidity contract detected")) {
+    return data.optimizationSuggestions;
+  }
 
-    return `🔍 Complexity: ${data.complexity}\n\n${gasSection}\n\n💡 Optimizations:\n${data.optimizationSuggestions}`;
-  };
+  return `🔍 Complexity: ${data.complexity}\n\n${data.optimizationSuggestions}`;
+};
 
   const handleSend = async () => {
     if (!inputValue.trim()) return;
@@ -235,10 +228,10 @@ export default function ChatInterfaceClient() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 relative overflow-hidden">
+<div className={`min-h-screen relative overflow-hidden ${darkMode ? 'dark bg-slate-900' : 'bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50'}`}>
       <AnimatedGrid darkMode={darkMode} />
 
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="absolute inset-cdx0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 w-72 h-72 bg-green-400 dark:bg-green-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-10 animate-blob"></div>
         <div className="absolute top-40 right-10 w-72 h-72 bg-emerald-400 dark:bg-emerald-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-10 animate-blob animation-delay-2000"></div>
       </div>
@@ -411,7 +404,7 @@ export default function ChatInterfaceClient() {
                     Welcome to Smart Gauge
                   </h2>
                   <p className="text-slate-600 dark:text-gray-400 text-lg">
-                    Paste your smart contract and let AI do the magic
+                    Paste in your solidity smart contract and let AI do the magic
                   </p>
                 </div>
               ) : (
@@ -424,7 +417,7 @@ export default function ChatInterfaceClient() {
                       message.sender === "user" ? "justify-end" : "justify-start"
                     }`}
                   >
-                    <div className="relative group max-w-[80%]">
+                    <div className="relative group max-w-[80%] min-w-0 overflow-hidden">
                       <div
                         className={`rounded-2xl px-6 py-4 ${
                           message.sender === "user"
@@ -432,19 +425,19 @@ export default function ChatInterfaceClient() {
                             : "bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-gray-200"
                         }`}
                       >
-                        <ReactMarkdown
-                          className="text-sm sm:text-base prose prose-sm dark:prose-invert max-w-none
-                            prose-headings:font-bold prose-headings:mb-2
-                            prose-p:mb-2 prose-p:leading-relaxed
-                            prose-ul:my-2 prose-ul:list-disc prose-ul:pl-4
-                            prose-ol:my-2 prose-ol:list-decimal prose-ol:pl-4
-                            prose-li:mb-1
-                            prose-code:bg-slate-100 prose-code:dark:bg-slate-700 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs
-                            prose-pre:bg-slate-100 prose-pre:dark:bg-slate-900 prose-pre:p-3 prose-pre:rounded-xl prose-pre:overflow-x-auto prose-pre:text-xs
-                            prose-strong:font-semibold"
-                        >
-                          {message.text}
-                        </ReactMarkdown>
+                        <div className="text-sm sm:text-base prose prose-sm dark:prose-invert max-w-none
+  prose-headings:font-bold prose-headings:mb-2
+  prose-p:mb-2 prose-p:leading-relaxed
+  prose-ul:my-2 prose-ul:list-disc prose-ul:pl-4
+  prose-ol:my-2 prose-ol:list-decimal prose-ol:pl-4
+  prose-li:mb-1
+  prose-code:bg-slate-100 prose-code:dark:bg-slate-700 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs
+  prose-pre:bg-slate-100 prose-pre:dark:bg-slate-900 prose-pre:p-3 prose-pre:rounded-xl prose-pre:overflow-x-auto prose-pre:text-xs
+  prose-strong:font-semibold">
+  <ReactMarkdown>
+    {message.text}
+  </ReactMarkdown>
+</div>
                         <div
                           className={`text-xs mt-2 ${
                             message.sender === "user"

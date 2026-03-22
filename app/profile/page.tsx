@@ -190,6 +190,10 @@ export default function ProfilePage() {
     router.push('/');
   };
 
+  const handleHome = () => {
+    router.push('/home');
+  };
+
   const handleDeleteAccount = () => {
     // Add your delete account logic here
     setShowDeleteModal(false);
@@ -230,9 +234,10 @@ export default function ProfilePage() {
             onClick={() => router.back()}
             className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-green-500 dark:hover:text-green-400 transition-colors"
           >
-            <img src="/smart gauge.png" alt="Smart Gauge" className="w-7 h-7 object-contain" />
-            <span className="font-bold text-sm text-slate-800 dark:text-white hidden sm:block">Smart Gauge</span>
+            <span className=" underline cursor:pointer">Back </span>
           </button>
+         
+          
 
           <h1 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white absolute left-1/2 -translate-x-1/2">
             Profile

@@ -1,6 +1,6 @@
-// Coinstats API integration for fetching gas prices and chain data
 
 
+// FILE IS NAMED COINSTATS, BUT I MAKE CALLS TO ETHERSCAN, MAKE GAS ESTIMATE CALLS TO WHEREVER YOU WISH
 
 
 import axios from "axios";
@@ -20,57 +20,96 @@ export interface GasAnalysis {
 }
 
 const SUPPORTED_CHAINS = [
-  { id: "ethereum",  name: "Ethereum",            symbol: "ETH",  chainId: "1" },
-  { id: "polygon",   name: "Polygon",             symbol: "MATIC",chainId: "137" },
-  { id: "bsc",       name: "Binance Smart Chain", symbol: "BNB",  chainId: "56" },
-  { id: "arbitrum",  name: "Arbitrum",            symbol: "ETH",  chainId: "42161" },
-  { id: "optimism",  name: "Optimism",            symbol: "ETH",  chainId: "10" },
-  { id: "avalanche", name: "Avalanche",           symbol: "AVAX", chainId: "43114" },
+  { id: "ethereum",  name: "Ethereum",            symbol: "ETH",  chainId: "1",     etherscanChainId: "1" },
+  { id: "polygon",   name: "Polygon",             symbol: "MATIC",chainId: "137",   etherscanChainId: "137" },
+  { id: "bsc",       name: "Binance Smart Chain", symbol: "BNB",  chainId: "56",    etherscanChainId: "56" },
+  { id: "arbitrum",  name: "Arbitrum",            symbol: "ETH",  chainId: "42161", etherscanChainId: "42161" },
+  { id: "optimism",  name: "Optimism",            symbol: "ETH",  chainId: "10",    etherscanChainId: "10" },
+  { id: "avalanche", name: "Avalanche",           symbol: "AVAX", chainId: "43114", etherscanChainId: "43114" },
 ];
 
-export async function fetchChainGasData(): Promise<ChainGasData[]> {
-  try {
-    const response = await axios.get(
-      "https://api.coinstats.app/public/v1/coins?limit=100&currency=USD"
-    );
+// Approximate token prices in USD — used to estimate gas cost in USD
+const TOKEN_PRICES_USD: Record<string, number> = {
+  ETH:  3500,
+  MATIC: 0.7,
+  BNB:  580,
+  AVAX:  35,
+};
 
-    const coins = response.data.coins;
-    if (!coins || !Array.isArray(coins)) throw new Error("Invalid coin data");
+/**
+ * Fetch live gas price from Etherscan Gas Oracle for a single chain
+ */
+async function fetchEtherscanGasOracle(chainId: string): Promise<number> {
+  const apiKey = process.env.ETHERSCAN_API_KEY;
 
-    const coinMap = new Map<string, number>(
-      coins.map((coin: any) => [coin.symbol, coin.price])
-    );
-
-    return SUPPORTED_CHAINS.map((chain) => {
-      const tokenPrice = coinMap.get(chain.symbol) ?? 0;
-      const gasPrice = getEstimatedGasPrice(chain.id);
-      const estimatedGasCost = parseFloat(
-        ((200000 * gasPrice * tokenPrice) / 1e9).toFixed(4)
-      );
-      return {
-        chainId: chain.chainId,
-        chainName: chain.name,
-        gasPrice,
-        tokenSymbol: chain.symbol,
-        estimatedGasCost,
-      };
-    });
-  } catch (error) {
-    console.error("❌ fetchChainGasData error:", error);
-    throw error; // let the caller handle it with .catch()
+  if (!apiKey) {
+    throw new Error("ETHERSCAN_API_KEY is not set");
   }
+
+  const url = `https://api.etherscan.io/v2/api?chainid=${chainId}&module=gastracker&action=gasoracle&apikey=${apiKey}`;
+
+  const response = await axios.get(url);
+  const data = response.data;
+
+  console.log(`✅ Etherscan Gas Oracle [chainId=${chainId}]:`, JSON.stringify(data.result, null, 2));
+
+  if (data.status !== "1" || !data.result) {
+    throw new Error(`Etherscan error for chainId ${chainId}: ${data.message}`);
+  }
+
+  // Use ProposeGasPrice as the standard recommended gas price
+  const gasPrice = parseFloat(data.result.ProposeGasPrice);
+
+  if (isNaN(gasPrice)) {
+    throw new Error(`Invalid gas price returned for chainId ${chainId}`);
+  }
+
+  return gasPrice;
 }
 
-function getEstimatedGasPrice(chainId: string): number {
-  const gasPrices: Record<string, number> = {
-    ethereum: 45,
-    polygon: 35,
-    bsc: 3,
-    arbitrum: 0.3,
-    optimism: 0.5,
-    avalanche: 25,
-  };
-  return gasPrices[chainId] || 20;
+/**
+ * Fetch live gas data for all supported chains using Etherscan Gas Oracle.
+ * Falls back to static data per chain if a specific chain call fails.
+ */
+export async function fetchChainGasData(): Promise<ChainGasData[]> {
+  console.log("🔄 Fetching gas data from Etherscan for all chains...");
+
+  const results = await Promise.all(
+    SUPPORTED_CHAINS.map(async (chain) => {
+      try {
+        const gasPrice = await fetchEtherscanGasOracle(chain.etherscanChainId);
+        const tokenPrice = TOKEN_PRICES_USD[chain.symbol] ?? 0;
+        const estimatedGasCost = parseFloat(
+          ((200000 * gasPrice * tokenPrice) / 1e9).toFixed(4)
+        );
+
+        console.log(`⛽ ${chain.name}: ${gasPrice} gwei → ~$${estimatedGasCost}`);
+
+        return {
+          chainId: chain.chainId,
+          chainName: chain.name,
+          gasPrice,
+          tokenSymbol: chain.symbol,
+          estimatedGasCost,
+        } as ChainGasData;
+      } catch (err) {
+        console.warn(`⚠️ Failed to fetch gas for ${chain.name}, using fallback:`, err);
+
+        // Per-chain fallback if one chain fails
+        const fallback = getFallbackChainData().find((f) => f.chainId === chain.chainId);
+        return fallback ?? {
+          chainId: chain.chainId,
+          chainName: chain.name,
+          gasPrice: 20,
+          tokenSymbol: chain.symbol,
+          estimatedGasCost: 0,
+        };
+      }
+    })
+  );
+
+  console.log("✅ All chain gas data fetched:", results);
+  return results;
 }
 
 export function getFallbackChainData(): ChainGasData[] {

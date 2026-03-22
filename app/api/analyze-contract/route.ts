@@ -294,20 +294,54 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     console.log("✅ Complexity:", complexity);
     console.log("✅ Gas chains returned:", chainGasData.length);
-
+     
+    const userPrompt = contractCode
     const systemPrompt = `You are an expert smart contract auditor and gas optimization specialist.
-Analyze the provided Solidity smart contract code and provide:
-1. An estimate of the contract's gas costs based on the chain data given
-2. Specific optimization recommendations to reduce gas costs
-3. Security considerations
-4. An overall complexity assessment (Low, Medium, High) based on the code structure and patterns used.
-Keep your response concise but detailed, focusing on actionable improvements.`;
 
-    const userPrompt = `Please analyze this smart contract and provide optimization suggestions:
+IMPORTANT: If the input is not valid Solidity code (e.g. random text, gibberish, plain English, or empty content), do NOT attempt to analyze it. Instead, respond ONLY with this exact message and nothing else:
+
+" No valid Solidity contract detected. Here's a simple example to get you started:
+
+\`\`\`solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract Example {
+    uint256 public value;
+
+    function setValue(uint256 _value) external {
+        value = _value;
+    }
+}
+\`\`\`
+
+Paste a real contract above to get gas estimates and optimization suggestions."
+
+If the input IS valid Solidity, 
+
+analyze it Here is the current live gas data for each chain:
+
+${chainGasData.map((g) => `- ${g.chainName}: ${g.gasPrice} gwei`).join("\n")}
+
+Using the gas prices above, estimate the real cost of deploying and interacting with this contract on each chain.
+
+Now analyze this smart contract:
 
 \`\`\`solidity
 ${contractCode}
 \`\`\`
+
+For each chain above:
+- Estimate the gas units this contract would consume for deployment
+- Multiply by the gwei price above to get the total gas cost in gwei
+- Flag which chain is cheapest to deploy on
+ provide:
+1. An estimate of the contract's gas costs based on the chain data given
+2. Specific optimization recommendations to reduce gas costs
+3. Security considerations
+4. An overall complexity assessment (Low, Medium, High) based on the code structure.
+Keep your response concise but detailed, focusing on actionable improvements.
+
 
 Focus on:
 - Gas optimization opportunities
@@ -331,6 +365,16 @@ Focus on:
       "Unable to generate suggestions";
 
     console.log("✅ Groq response received");
+
+    if (optimizationSuggestions.includes("No valid Solidity contract detected")) {
+  return NextResponse.json({
+    success: true,
+    contractCode: "",
+    gasEstimates: [],
+    optimizationSuggestions,
+    complexity: "",
+  } as AnalysisResponse);
+}
 
     return NextResponse.json({
       success: true,
