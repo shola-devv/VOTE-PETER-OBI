@@ -6,7 +6,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Send, Check, Paperclip, Mic, MessageSquare, Settings, User, LogOut, Plus, Moon, Sun, Zap, Copy } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-
+import { useSearchParams } from 'next/navigation';
 
 interface Message {
   id: string;
@@ -123,6 +123,77 @@ export default function ChatInterfaceClient() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+
+const searchParams = useSearchParams();
+  const hasSentInitial = useRef(false); // ← prevent double send
+
+  // ← auto-send the contract from landing page on mount
+  useEffect(() => {
+    const contract = searchParams.get('contract');
+    if (contract && !hasSentInitial.current) {
+      hasSentInitial.current = true;
+      setInputValue(contract);
+
+      // slight delay so component is fully mounted
+      setTimeout(() => {
+        handleSendWithValue(contract);
+      }, 300);
+    }
+  }, []);
+
+  // ← extract send logic to accept a value directly
+  const handleSendWithValue = async (value: string) => {
+    if (!value.trim()) return;
+
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      text: value,
+      sender: "user",
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, newMessage]);
+    setInputValue("");
+    setIsTyping(true);
+
+    try {
+      const res = await fetch("/api/analyze-contract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contractCode: value }),
+      });
+
+      const data: AnalysisResponse = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to analyze contract");
+      }
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          text: formatAnalysisResponse(data),
+          sender: "ai",
+          timestamp: new Date(),
+        },
+      ]);
+    } catch (error) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          text: `❌ ${error instanceof Error ? error.message : "Something went wrong"}`,
+          sender: "ai",
+          timestamp: new Date(),
+        },
+      ]);
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -177,7 +248,7 @@ export default function ChatInterfaceClient() {
 
   const handleSend = async () => {
     if (!inputValue.trim()) return;
-
+       await handleSendWithValue(inputValue);
     const newMessage: Message = {
       id: Date.now().toString(),
       text: inputValue,

@@ -3,7 +3,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, useAnimation } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { Moon, Sun, Paperclip, Mic, Send, Braces } from 'lucide-react';
+import { Moon, Sun, Paperclip, Mic, Send, Braces, Zap, BarChart3, Bot, Check } from 'lucide-react';
+import Link from "next/link";
 
 // Animated Grid Background Component
 const AnimatedGrid = ({ darkMode }: { darkMode: boolean }) => {
@@ -15,7 +16,6 @@ const AnimatedGrid = ({ darkMode }: { darkMode: boolean }) => {
   }>>([]);
 
   useEffect(() => {
-    // Generate random grid lines that will animate
     const lines = Array.from({ length: 8 }, (_, i) => ({
       id: i,
       isHorizontal: Math.random() > 0.5,
@@ -23,15 +23,11 @@ const AnimatedGrid = ({ darkMode }: { darkMode: boolean }) => {
       delay: Math.random() * 3,
     }));
     setGridLines(lines);
-    // auto darkmode here
-
   }, []);
 
   return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-      {/* Grid container */}
-      <div className="absolute inset-0 opacity-50 dark:opacity-60">
-        {/* Static grid squares for responsive sizing */}
+    <div className={`fixed inset-0 overflow-hidden pointer-events-none z-0 ${darkMode ? 'bg-surface' : 'bg-slate-900'}`}>
+      <div className="absolute inset-0 opacity-50">
         <div className="absolute inset-0" style={{
           backgroundImage: `
             linear-gradient(to right, rgba(34, 197, 94, 0.35) 1px, transparent 1px),
@@ -40,62 +36,34 @@ const AnimatedGrid = ({ darkMode }: { darkMode: boolean }) => {
           backgroundSize: 'clamp(40px, 8vw, 100px) clamp(40px, 8vw, 100px)'
         }} />
 
-        {/* Animated Vertical lines */}
         {gridLines.filter(line => !line.isHorizontal).map((line) => (
           <motion.div
             key={`v-${line.id}`}
             className="absolute top-0 bottom-0"
             style={{ left: `${line.position}%` }}
             initial={{ height: 0, top: '50%' }}
-            animate={{ 
-              height: '100%',
-              top: 0,
-            }}
-            transition={{
-              duration: 2,
-              delay: line.delay,
-              repeat: Infinity,
-              repeatDelay: 5,
-              ease: "easeInOut"
-            }}
+            animate={{ height: '100%', top: 0 }}
+            transition={{ duration: 2, delay: line.delay, repeat: Infinity, repeatDelay: 5, ease: "easeInOut" }}
           >
-            {/* Outer glow effect - brighter with green-200 */}
             <div className="absolute inset-0 w-3 -translate-x-1/2 bg-linear-to-b from-transparent via-green-200/90 to-transparent blur-lg" />
-            {/* Middle glow - brighter */}
             <div className="absolute inset-0 w-1.5 -translate-x-1/2 bg-linear-to-b from-transparent via-green-200 to-transparent blur-md" />
-            {/* Inner glow - bright */}
             <div className="absolute inset-0 w-0.75 -translate-x-1/2 bg-linear-to-b from-transparent via-green-300 to-transparent blur-sm" />
-            {/* Main line - green-500 core */}
             <div className="absolute inset-0 w-0.5 -translate-x-1/2 bg-linear-to-b from-transparent via-green-500 to-transparent" />
           </motion.div>
         ))}
 
-        {/* Animated Horizontal lines */}
         {gridLines.filter(line => line.isHorizontal).map((line) => (
           <motion.div
             key={`h-${line.id}`}
             className="absolute left-0 right-0"
             style={{ top: `${line.position}%` }}
             initial={{ width: 0, left: '50%' }}
-            animate={{ 
-              width: '100%',
-              left: 0,
-            }}
-            transition={{
-              duration: 2,
-              delay: line.delay,
-              repeat: Infinity,
-              repeatDelay: 5,
-              ease: "easeInOut"
-            }}
+            animate={{ width: '100%', left: 0 }}
+            transition={{ duration: 2, delay: line.delay, repeat: Infinity, repeatDelay: 5, ease: "easeInOut" }}
           >
-            {/* Outer glow effect - brighter with green-200 */}
             <div className="absolute inset-0 h-3 -translate-y-1/2 bg-linear-to-r from-transparent via-green-200/90 to-transparent blur-lg" />
-            {/* Middle glow - brighter */}
             <div className="absolute inset-0 h-1.5 -translate-y-1/2 bg-linear-to-r from-transparent via-green-200 to-transparent blur-md" />
-            {/* Inner glow - bright */}
             <div className="absolute inset-0 h-0.75 -translate-y-1/2 bg-linear-to-r from-transparent via-green-300 to-transparent blur-sm" />
-            {/* Main line - green-500 core */}
             <div className="absolute inset-0 h-0.5 -translate-y-1/2 bg-linear-to-r from-transparent via-green-500 to-transparent" />
           </motion.div>
         ))}
@@ -109,119 +77,117 @@ export default function LandingPage() {
   const [inputValue, setInputValue] = useState('');
   const controls = useAnimation();
   const router = useRouter();
-  
+
   const [showTooltip, setShowTooltip] = useState<string | null>(null);
-const [isTyping, setIsTyping] = useState(false);
-const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const [isTyping, setIsTyping] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const featuresRef = useRef<HTMLDivElement | null>(null);
+  const pricingRef = useRef<HTMLDivElement | null>(null);
 
-//auto darkmode
-useEffect(()=>{setDarkMode(!darkMode)}, [])
-useEffect(() => {
-  if (textareaRef.current) {
-    textareaRef.current.style.height = "auto";
-    textareaRef.current.style.height =
-      textareaRef.current.scrollHeight + "px";
-  }
+  const isDark = !darkMode;
 
-  if (inputValue.trim()) {
-    setIsTyping(true);
-    const timeout = setTimeout(() => setIsTyping(false), 800);
-    return () => clearTimeout(timeout);
-  }
-}, [inputValue]);
+  const toggleDarkMode = () => setDarkMode(prev => !prev);
 
-useEffect(() => {
-  if (showTooltip) {
-    const timeout = setTimeout(() => setShowTooltip(null), 2000);
-    return () => clearTimeout(timeout);
-  }
-}, [showTooltip]);
+  const scrollToFeatures = () => {
+    featuresRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
+  const scrollToPricing = () => {
+    pricingRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const focusInput = () => {
+    textareaRef.current?.focus();
+    textareaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + "px";
+    }
+    if (inputValue.trim()) {
+      setIsTyping(true);
+      const timeout = setTimeout(() => setIsTyping(false), 800);
+      return () => clearTimeout(timeout);
+    }
+  }, [inputValue]);
+
+  useEffect(() => {
+    if (showTooltip) {
+      const timeout = setTimeout(() => setShowTooltip(null), 2000);
+      return () => clearTimeout(timeout);
+    }
+  }, [showTooltip]);
 
   const handleSend = async () => {
     if (inputValue.trim()) {
-      // Animate the input box floating down
       await controls.start({
         y: 1000,
         opacity: 0,
         transition: { duration: 0.8, ease: 'easeInOut' }
       });
-      
-      // Navigate to home page
-      router.push('/home');
+      router.push(`/home?contract=${encodeURIComponent(inputValue)}`);
     }
   };
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
-
-
-
   return (
-    <div className={`min-h-screen transition-colors duration-300 relative ${
-      darkMode ? 'dark bg-slate-900 text-white' : 'bg-surface'
+    <div className={`min-h-screen overflow-y-auto transition-colors duration-300 relative ${
+      isDark ? 'bg-slate-900 text-white' : 'bg-surface text-surfaceDark'
     }`}>
-      {/* Animated Grid Background */}
       <AnimatedGrid darkMode={darkMode} />
 
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8 py-2 sm:py-4 bg-surface/80 dark:bg-slate-900/80 backdrop-blur-sm">
+      <nav className={`fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8 py-2 sm:py-4 border-b transition-colors duration-300 ${
+        isDark ? 'bg-slate-900/95 border-slate-700/50' : 'bg-surface/95 border-gray-200/50'
+      }`}>
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          {/* Logo */}
           <div className="flex items-center space-x-2">
-            {/* Logo Image */}
-            <img 
-              src="/smart gauge.png" 
-              alt="Smart Gauge Logo" 
-              className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 xl:w-20 xl:h-20 object-contain"
-            />
-            {/* Brand Text */}
-            <span className="text-sm sm:text-lg font-bold bg-linear-to-r from-primary to-primaryDark bg-clip-text dark:text-white">
+            <img src="/smart gauge.png" alt="Smart Gauge Logo"
+              className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 xl:w-20 xl:h-20 object-contain" />
+            <span className={`text-sm sm:text-lg font-bold ${isDark ? 'text-white' : 'text-surfaceDark'}`}>
               Smart Gauge
             </span>
           </div>
 
-          {/* Navigation Links */}
           <div className="flex items-center gap-3">
-            <button className="cursor-pointer hidden sm:inline-block text-surfaceDark dark:text-gray-300 hover:text-primary dark:hover:text-primaryLight transition-colors font-medium text-sm sm:text-base">
+            <button
+              onClick={scrollToFeatures}
+              className={`cursor-pointer hidden sm:inline-block font-medium text-sm sm:text-base transition-colors hover:text-primary ${
+                isDark ? 'text-gray-300' : 'text-surfaceDark'
+              }`}>
               Features
             </button>
-            <button className="cursor-pointer hidden sm:inline-block text-surfaceDark dark:text-gray-300 hover:text-primary dark:hover:text-primaryLight transition-colors font-medium text-sm sm:text-base">
+            <button
+              onClick={scrollToPricing}
+              className={`cursor-pointer hidden sm:inline-block font-medium text-sm sm:text-base transition-colors hover:text-primary ${
+                isDark ? 'text-gray-300' : 'text-surfaceDark'
+              }`}>
               Pricing
             </button>
-            <button className="cursor-pointer hidden md:inline-block text-surfaceDark dark:text-gray-300 hover:text-primary dark:hover:text-primaryLight transition-colors font-medium text-sm sm:text-base">
+          <Link href='/landing/login'>
+            <button className={`cursor-pointer hidden md:inline-block font-medium text-sm sm:text-base transition-colors hover:text-primary ${
+              isDark ? 'text-gray-300' : 'text-surfaceDark'
+            }`}>
               Log in
             </button>
-            
-            {/* Dark Mode Toggle */}
+              </Link>
             <button
               onClick={toggleDarkMode}
-              className="cursor-pointer p-2 rounded-neu shadow-neu dark:shadow-neuDark hover:shadow-neuInset dark:hover:shadow-neuInsetDark transition-all duration-300 active:shadow-neuInset dark:active:shadow-neuInsetDark"
+              className="cursor-pointer p-2 rounded-neu shadow-neu hover:shadow-neuInset transition-all duration-300 active:shadow-neuInset"
               aria-label="Toggle dark mode"
             >
-              {darkMode ? (
-                <Sun className="w-5 h-5 text-primaryLight" />
-              ) : (
-                <Moon className="w-5 h-5 text-surfaceDark" />
-              )}
+              {isDark ? <Sun className="w-5 h-5 text-primaryLight" /> : <Moon className="w-5 h-5 text-surfaceDark" />}
             </button>
 
-            <button className="
-    cursor-pointer
-    px-6 py-2
-    rounded-2xl
-    bg-linear-to-br from-primaryDark via-primary via-green-400 to-primaryLight
-    text-surfaceLight
-    font-semibold
-    text-sm sm:text-base md:text-lg
-    transition-all duration-300
-
-    shadow-[8px_8px_18px_rgba(0,0,0,0.35),_-8px_-8px_18px_rgba(255,255,255,0.25)]
-    
-    hover:shadow-[6px_6px_14px_rgba(0,0,0,0.3),_-6px_-6px_14px_rgba(255,255,255,0.2)]
-    
-    active:shadow-[inset_6px_6px_12px_rgba(0,0,0,0.35),_inset_-6px_-6px_12px_rgba(255,255,255,0.2)]">
+            <button
+              onClick={focusInput}  // ← focus input on click
+              className="cursor-pointer px-6 py-2 rounded-2xl
+                bg-linear-to-br from-primaryDark via-primary via-green-400 to-primaryLight
+                text-surfaceLight font-semibold text-sm sm:text-base md:text-lg transition-all duration-300
+                shadow-[8px_8px_18px_rgba(0,0,0,0.35),_-8px_-8px_18px_rgba(255,255,255,0.25)]
+                hover:shadow-[6px_6px_14px_rgba(0,0,0,0.3),_-6px_-6px_14px_rgba(255,255,255,0.2)]
+                active:shadow-[inset_6px_6px_12px_rgba(0,0,0,0.35),_inset_-6px_-6px_12px_rgba(255,255,255,0.2)]">
               Start Building for free
             </button>
           </div>
@@ -229,14 +195,16 @@ useEffect(() => {
       </nav>
 
       {/* Hero Section */}
-      <main className="relative z-10 pt-20 mt-12 sm:mb-8 md:mb-8 lg:mb-8 pb-8 sm:pb-4 px-4 sm:px-6 lg:px-8">
+      <main className="relative z-10 pt-20 mt-12 pb-8 sm:pb-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
+
           {/* Hero Text */}
-          <div className="text-center mb-32">
+          <div className="text-center text-center mb-16 md:mb-8 lg:mb-16">
             <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-8 leading-tight px-4">
-              <span className="text-surfaceDark dark:text-white">Understand what your smart contracts </span>
+              <span className={isDark ? 'text-white' : 'text-surfaceDark'}>
+                Understand what your smart contracts{' '}
+              </span>
               <span className="relative inline-block">
-               
                 <motion.span
                   className="absolute -right-2 top-0 text-primary"
                   animate={{ rotate: [0, 10, -10, 0] }}
@@ -245,179 +213,291 @@ useEffect(() => {
                   <Braces className="text-green-400 w-10 h-10 sm:w-14 sm:h-14 md:w-20 md:h-20 lg:w-28 lg:h-28 xl:w-36 xl:h-36" />
                 </motion.span>
               </span>
-              
               <br />
-              <span className="text-surfaceDark  dark:text-white">Costs You Before you Deploy.</span>
+              <span className={isDark ? 'text-white' : 'text-surfaceDark'}>
+                Costs You Before you Deploy.
+              </span>
             </h1>
-            
+
             <div className="max-w-2xl mx-auto flex flex-col gap-2 mb-8">
               <div className="flex items-center justify-center p-2 sm:p-0">
-                <p className="text-sm sm:text-base md:text-lg lg:text-lg text-surfaceDark  dark:text-gray-300 font-semibold text-center">
+                <p className={`text-sm sm:text-base md:text-lg font-semibold text-center ${isDark ? 'text-gray-300' : 'text-surfaceDark'}`}>
                   Instant gas estimates, complexity insights, and AI-driven gas optimisation suggestions
                 </p>
               </div>
-              
             </div>
           </div>
 
-          {/* Input Box with Animation */}
-<motion.div
-  animate={controls}
-  className="max-w-3xl mx-auto relative"
->
-  {/* Decorative curved line - left */}
-  <div className="absolute -left-8 sm:-left-16 md:-left-24 top-0 w-32 sm:w-48 md:w-64 h-32 sm:h-48 md:h-64 pointer-events-none hidden lg:block">
-    <svg viewBox="0 0 200 200" className="w-full h-full">
-      <path
-        d="M 150 10 Q 100 50, 100 100"
-        stroke="currentColor"
-        strokeWidth="20"
-        fill="none"
-        className="text-primaryLight opacity-60"
-        strokeLinecap="round"
-      />
-    </svg>
-  </div>
-
-  {/* Decorative curved line - right */}
-  <div className="absolute -right-8 sm:-right-16 md:-right-24 bottom-0 w-32 sm:w-48 md:w-64 h-32 sm:h-48 md:h-64 pointer-events-none hidden lg:block">
-    <svg viewBox="0 0 200 200" className="w-full h-full">
-      <path
-        d="M 50 100 Q 100 150, 150 190"
-        stroke="currentColor"
-        strokeWidth="20"
-        fill="none"
-        className="text-primaryLight opacity-60"
-        strokeLinecap="round"
-      />
-    </svg>
-  </div>
-
-  {/* Input Container */}
-  <div className="relative bg-surface dark:bg-slate-800  bg-transparent rounded-neu shadow-neu dark:shadow-neuDark p-3 sm:p-4 md:p-6  mt-12 sm:mt-32 md:mt-32 lg:mt-36 transition-all duration-300 rounded-2xl">
-
-    <label className="block text-sm sm:text-base md:text-lg font-medium  text-surfaceDark dark:text-gray-300 mb-4 ">
-      paste in your smart contract and AI does the magic:
-    </label>
-
-    {/* Input Wrapper */}
-    <div className="relative">
-
-      {/* AI Pulse */}
-      <div
-        className={`absolute inset-0 rounded-2xl pointer-events-none transition-opacity duration-500  ${
-          isTyping
-            ? "opacity-100 animate-pulse bg-linear-to-r from-primary/10 via-primaryLight/10 to-primary/10"
-            : "opacity-0"
-        }`}
-      />
-
-      <textarea
-        ref={textareaRef}
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-        placeholder="pragma solidity..."
-        rows={1}
-        className="  relative
-    w-full
-    min-h-[100px]
-    max-h-68
-    pl-4 pr-32 py-3
-    rounded-2xl
-    bg-gradient-to-br 
-      from-primaryDark/40 via-primary/30 to-primaryLight/40
-    backdrop-blur-md
-    light:bg-white/20
-    light:backdrop-blur-sm
-    resize-none
-    overflow-hidden
-    text-surfaceDark dark:text-white
-    placeholder-surfaceShadow dark:placeholder-gray-400
-    text-sm sm:text-base
-    transition-all duration-300
-    focus:outline-none
-    shadow-[8px_8px_18px_rgba(0,0,0,0.35),_-8px_-8px_18px_rgba(255,255,255,0.15)]
-    focus:shadow-[inset_6px_6px_14px_rgba(0,0,0,0.4),_inset_-6px_-6px_14px_rgba(255,255,255,0.15)] "
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && e.metaKey) {
-            handleSend();
-          }
-        }}
-      />
-
-      {/* ICON ROW */}
-      <div className="absolute bottom-3 right-3 flex items-center gap-2">
-
-        {/* Paperclip */}
-        <div className="relative group">
-          <button
-            disabled
-            onClick={() => setShowTooltip("clip")}
-            className="p-2 rounded-full shadow-neu dark:shadow-neuDark opacity-50 cursor-not-allowed"
-          >
-            <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
-          </button>
-
-          {(showTooltip === "clip") && (
-            <div className="absolute bottom-12 right-0 bg-black text-white text-xs px-3 py-1.5 rounded-md shadow-lg whitespace-nowrap">
-              Coming soon
+          {/* Input Box */}
+          <motion.div animate={controls} className="max-w-3xl mx-auto relative">
+            <div className="absolute -left-8 sm:-left-16 md:-left-24 top-0 w-32 sm:w-48 md:w-64 h-32 sm:h-48 md:h-64 pointer-events-none hidden lg:block">
+              <svg viewBox="0 0 200 200" className="w-full h-full">
+                <path d="M 150 10 Q 100 50, 100 100" stroke="currentColor" strokeWidth="20" fill="none" className="text-primaryLight opacity-60" strokeLinecap="round" />
+              </svg>
             </div>
-          )}
-        </div>
-
-        {/* Mic */}
-        <div className="relative group">
-          <button
-            disabled
-            onClick={() => setShowTooltip("mic")}
-            className="p-2 rounded-full shadow-neu dark:shadow-neuDark opacity-50 cursor-not-allowed"
-          >
-            <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
-          </button>
-
-          {(showTooltip === "mic") && (
-            <div className="absolute bottom-12 right-0 bg-black text-white text-xs px-3 py-1.5 rounded-md shadow-lg whitespace-nowrap">
-              Coming soon
+            <div className="absolute -right-8 sm:-right-16 md:-right-24 bottom-0 w-32 sm:w-48 md:w-64 h-32 sm:h-48 md:h-64 pointer-events-none hidden lg:block">
+              <svg viewBox="0 0 200 200" className="w-full h-full">
+                <path d="M 50 100 Q 100 150, 150 190" stroke="currentColor" strokeWidth="20" fill="none" className="text-primaryLight opacity-60" strokeLinecap="round" />
+              </svg>
             </div>
-          )}
-        </div>
 
-        {/* Send Button */}
-        <motion.button
-          onClick={handleSend}
-          whileHover={{ scale: inputValue.trim() ? 1.07 : 1 }}
-          whileTap={{ scale: inputValue.trim() ? 0.95 : 1 }}
-          disabled={!inputValue.trim()}
-          className={`
-            relative p-2 rounded-full
-            bg-slate-900 dark:bg-black
-            transition-all duration-300
-            ${
-              inputValue.trim()
-                ? "ring-2 ring-primaryLight/60 shadow-[0_0_20px_rgba(99,102,241,0.6)]"
-                : "opacity-50 cursor-not-allowed"
-            }
-          `}
-        >
-          <Send className="w-4 cursor-pointer h-4 sm:w-5 sm:h-5 text-white" />
-        </motion.button>
+            <div className={`relative rounded-2xl shadow-neu p-3 sm:p-4 md:p-6 mt-12 sm:mt-32 md:mt-8 lg:mt-24 transition-all duration-300 ${
+              isDark ? 'bg-slate-800' : 'bg-surface'
+            }`}>
+              <label className={`block text-sm sm:text-base md:text-lg font-medium mb-4 ${isDark ? 'text-gray-300' : 'text-surfaceDark'}`}>
+                paste in your smart contract and AI does the magic:
+              </label>
 
-      </div>
-    </div>
-  </div>
-</motion.div>
+              <div className="relative">
+                <div className={`absolute inset-0 rounded-2xl pointer-events-none transition-opacity duration-500 ${
+                  isTyping ? "opacity-100 animate-pulse bg-linear-to-r from-primary/10 via-primaryLight/10 to-primary/10" : "opacity-0"
+                }`} />
 
-          {/* Additional Info */}
+                <textarea
+                  ref={textareaRef}
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder="pragma solidity..."
+                  rows={1}
+                  className={`relative w-full min-h-[100px] max-h-68 pl-4 pr-32 py-3 rounded-2xl
+                    bg-gradient-to-br from-primaryDark/40 via-primary/30 to-primaryLight/40
+                    backdrop-blur-md resize-none overflow-hidden text-sm sm:text-base
+                    transition-all duration-300 focus:outline-none
+                    shadow-[8px_8px_18px_rgba(0,0,0,0.35),_-8px_-8px_18px_rgba(255,255,255,0.15)]
+                    focus:shadow-[inset_6px_6px_14px_rgba(0,0,0,0.4),_inset_-6px_-6px_14px_rgba(255,255,255,0.15)]
+                    ${isDark ? 'text-white placeholder-gray-400' : 'text-surfaceDark placeholder-surfaceShadow'}
+                  `}
+                  onKeyDown={(e) => { if (e.key === "Enter" && e.metaKey) handleSend(); }}
+                />
+
+                <div className="absolute bottom-3 right-3 flex items-center gap-2">
+                  <div className="relative">
+                    <button disabled onClick={() => setShowTooltip("clip")} className="p-2 rounded-full shadow-neu opacity-50 cursor-not-allowed">
+                      <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </button>
+                    {showTooltip === "clip" && (
+                      <div className="absolute bottom-12 right-0 bg-black text-white text-xs px-3 py-1.5 rounded-md shadow-lg whitespace-nowrap">Coming soon</div>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <button disabled onClick={() => setShowTooltip("mic")} className="p-2 rounded-full shadow-neu opacity-50 cursor-not-allowed">
+                      <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </button>
+                    {showTooltip === "mic" && (
+                      <div className="absolute bottom-12 right-0 bg-black text-white text-xs px-3 py-1.5 rounded-md shadow-lg whitespace-nowrap">Coming soon</div>
+                    )}
+                  </div>
+                  <motion.button
+                    onClick={handleSend}
+                    whileHover={{ scale: inputValue.trim() ? 1.07 : 1 }}
+                    whileTap={{ scale: inputValue.trim() ? 0.95 : 1 }}
+                    disabled={!inputValue.trim()}
+                    className={`relative p-2 rounded-full transition-all duration-300
+                      ${isDark ? 'bg-black' : 'bg-slate-900'}
+                      ${inputValue.trim() ? "ring-2 ring-primaryLight/60 shadow-[0_0_20px_rgba(99,102,241,0.6)]" : "opacity-50 cursor-not-allowed"}`}
+                  >
+                    <Send className="w-4 cursor-pointer h-4 sm:w-5 sm:h-5 text-white" />
+                  </motion.button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.8 }}
-            className="mt-8 sm:mt-12 text-center text-xs sm:text-sm text-surfaceDark dark:text-gray-400"
+            className={`mt-8 sm:mt-12 text-center text-xs sm:text-sm ${isDark ? 'text-gray-400' : 'text-surfaceDark'}`}
           >
-            <p>Press <kbd className="px-2 py-1 shadow-neu dark:shadow-neuDark rounded text-xs sm:text-sm">⌘</kbd> + <kbd className="px-2 py-1 shadow-neu dark:shadow-neuDark rounded text-xs sm:text-sm">Enter</kbd> to send</p>
+            <p>Press <kbd className="px-2 py-1 shadow-neu rounded text-xs sm:text-sm">⌘</kbd> + <kbd className="px-2 py-1 shadow-neu rounded text-xs sm:text-sm">Enter</kbd> to send</p>
           </motion.div>
         </div>
-      </main>
+      
+
+      {/* ─── FEATURES SECTION ─── */}
+      <section
+        ref={featuresRef}
+        className={`relative z-10 py-24 px-4 sm:px-6 lg:px-8 transition-colors duration-300 ${
+          isDark ? 'bg-slate-800/60' : 'bg-white/60'
+        } backdrop-blur-sm`}
+      >
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className={`text-3xl sm:text-4xl md:text-5xl font-bold mb-4 ${isDark ? 'text-white' : 'text-surfaceDark'}`}>
+              Everything you need before you deploy
+            </h2>
+            <p className={`text-base sm:text-lg max-w-2xl mx-auto ${isDark ? 'text-gray-400' : 'text-surfaceDark/70'}`}>
+              Stop guessing. Start knowing exactly what your contract will cost.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: <Zap className="w-8 h-8 text-green-400" />,
+                title: "Instant Gas Estimates",
+                description: "Paste your Solidity contract and get accurate gas cost estimates in seconds — before you deploy a single line to mainnet.",
+              },
+              {
+                icon: <BarChart3 className="w-8 h-8 text-green-400" />,
+                title: "Complexity Insights",
+                description: "Understand which parts of your contract are gas-heavy and why. Get a breakdown of function-level complexity so you know exactly where the costs come from.",
+              },
+              {
+                icon: <Bot className="w-8 h-8 text-green-400" />,
+                title: "AI-Driven Optimisation",
+                description: "Let AI suggest concrete improvements to reduce your contract's gas footprint — powered by OpenAI or Gemini, your choice.",
+              },
+            ].map((feature, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: i * 0.15 }}
+                viewport={{ once: true }}
+                className={`rounded-2xl p-6 shadow-neu transition-colors duration-300 ${
+                  isDark ? 'bg-slate-700/50' : 'bg-surface'
+                }`}
+              >
+                <div className="mb-4">{feature.icon}</div>
+                <h3 className={`text-lg font-bold mb-2 ${isDark ? 'text-white' : 'text-surfaceDark'}`}>
+                  {feature.title}
+                </h3>
+                <p className={`text-sm leading-relaxed ${isDark ? 'text-gray-400' : 'text-surfaceDark/70'}`}>
+                  {feature.description}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── PRICING SECTION ─── */}
+      <section
+        ref={pricingRef}
+        className={`relative z-10 py-24 px-4 sm:px-6 lg:px-8 transition-colors duration-300`}
+      >
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className={`text-3xl sm:text-4xl md:text-5xl font-bold mb-4 ${isDark ? 'text-white' : 'text-surfaceDark'}`}>
+              Simple pricing
+            </h2>
+            <p className={`text-base sm:text-lg max-w-xl mx-auto ${isDark ? 'text-gray-400' : 'text-surfaceDark/70'}`}>
+              Start for free. Scale on your own terms.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+            {/* Free Tier */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              className={`rounded-2xl p-8 shadow-neu transition-colors duration-300 ${
+                isDark ? 'bg-slate-700/50' : 'bg-surface'
+              }`}
+            >
+              <div className="mb-6">
+                <h3 className={`text-xl font-bold mb-1 ${isDark ? 'text-white' : 'text-surfaceDark'}`}>Free</h3>
+                <div className="flex items-end gap-1">
+                  <span className={`text-4xl font-bold ${isDark ? 'text-white' : 'text-surfaceDark'}`}>$0</span>
+                  <span className={`text-sm mb-1 ${isDark ? 'text-gray-400' : 'text-surfaceDark/60'}`}>/month</span>
+                </div>
+                <p className={`text-sm mt-2 ${isDark ? 'text-gray-400' : 'text-surfaceDark/70'}`}>
+                  Daily quota included — no credit card needed.
+                </p>
+              </div>
+
+              <ul className="space-y-3 mb-8">
+                {[
+                  "Gas estimates",
+                  "Complexity insights",
+                  "AI optimisation suggestions",
+                  "Daily usage quota",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3">
+                    <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
+                    <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-surfaceDark/80'}`}>{item}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <button
+                onClick={focusInput}
+                className={`w-full py-3 rounded-xl font-semibold text-sm transition-all duration-300 shadow-neu hover:shadow-neuInset active:shadow-neuInset ${
+                  isDark ? 'text-white' : 'text-surfaceDark'
+                }`}>
+                Get started free
+              </button>
+            </motion.div>
+
+            {/* Unlimited Tier */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              viewport={{ once: true }}
+              className="rounded-2xl p-8 transition-colors duration-300
+                bg-linear-to-br from-primaryDark via-primary to-primaryLight
+                shadow-[8px_8px_18px_rgba(0,0,0,0.35),_-8px_-8px_18px_rgba(255,255,255,0.15)]
+                relative overflow-hidden"
+            >
+              {/* Badge */}
+              <div className="absolute top-4 right-4 bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">
+                Unlimited
+              </div>
+
+              <div className="mb-6">
+                <h3 className="text-xl font-bold mb-1 text-white">Bring Your Own Key</h3>
+                <div className="flex items-end gap-1">
+                  <span className="text-4xl font-bold text-white">Free</span>
+                </div>
+                <p className="text-sm mt-2 text-white/70">
+                  Set your own OpenAI or Gemini API key and get unlimited access — no quotas, no limits.
+                </p>
+              </div>
+
+              <ul className="space-y-3 mb-8">
+                {[
+                  "Everything in Free",
+                  "Unlimited gas estimates",
+                  "Unlimited AI suggestions",
+                  "OpenAI or Gemini — your choice",
+                  "Your key, your data",
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3">
+                    <Check className="w-4 h-4 text-white flex-shrink-0" />
+                    <span className="text-sm text-white/90">{item}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <button
+                onClick={focusInput}
+                className="w-full py-3 rounded-xl font-semibold text-sm text-primary bg-white transition-all duration-300
+                  shadow-[4px_4px_10px_rgba(0,0,0,0.2)] hover:shadow-[2px_2px_6px_rgba(0,0,0,0.15)]
+                  active:shadow-[inset_4px_4px_8px_rgba(0,0,0,0.2)]">
+                Start with your key
+              </button>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+ </main>
     </div>
+   
   );
 }
