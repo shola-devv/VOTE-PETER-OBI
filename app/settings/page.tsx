@@ -2,120 +2,82 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Moon, Sun, Key, User, LogOut, ChevronDown, Check, Eye, EyeOff, Save, AlertCircle, Braces } from 'lucide-react';
+import { Moon, Sun, Key, User, LogOut, ChevronDown, Check, Eye, EyeOff, Save, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
-// Reused from landing page
-const AnimatedGrid = ({ darkMode }: { darkMode: boolean }) => {
-  const [gridLines, setGridLines] = useState<Array<{
-    id: number;
-    isHorizontal: boolean;
-    position: number;
-    delay: number;
-  }>>([]);
-
-  useEffect(() => {
-    const lines = Array.from({ length: 8 }, (_, i) => ({
-      id: i,
-      isHorizontal: Math.random() > 0.5,
-      position: Math.random() * 100,
-      delay: Math.random() * 3,
-    }));
-    setGridLines(lines);
-  }, []);
-
-  return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-      <div className="absolute inset-0 opacity-50 dark:opacity-60">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `
-            linear-gradient(to right, rgba(34, 197, 94, 0.35) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(34, 197, 94, 0.35) 1px, transparent 1px)
-          `,
-          backgroundSize: 'clamp(40px, 8vw, 100px) clamp(40px, 8vw, 100px)'
-        }} />
-        {gridLines.filter(line => !line.isHorizontal).map((line) => (
-          <motion.div
-            key={`v-${line.id}`}
-            className="absolute top-0 bottom-0"
-            style={{ left: `${line.position}%` }}
-            initial={{ height: 0, top: '50%' }}
-            animate={{ height: '100%', top: 0 }}
-            transition={{ duration: 2, delay: line.delay, repeat: Infinity, repeatDelay: 5, ease: "easeInOut" }}
-          >
-            <div className="absolute inset-0 w-3 -translate-x-1/2 bg-gradient-to-b from-transparent via-green-200/90 to-transparent blur-lg" />
-            <div className="absolute inset-0 w-1.5 -translate-x-1/2 bg-gradient-to-b from-transparent via-green-200 to-transparent blur-md" />
-            <div className="absolute inset-0 w-0.5 -translate-x-1/2 bg-gradient-to-b from-transparent via-green-500 to-transparent" />
-          </motion.div>
-        ))}
-        {gridLines.filter(line => line.isHorizontal).map((line) => (
-          <motion.div
-            key={`h-${line.id}`}
-            className="absolute left-0 right-0"
-            style={{ top: `${line.position}%` }}
-            initial={{ width: 0, left: '50%' }}
-            animate={{ width: '100%', left: 0 }}
-            transition={{ duration: 2, delay: line.delay, repeat: Infinity, repeatDelay: 5, ease: "easeInOut" }}
-          >
-            <div className="absolute inset-0 h-3 -translate-y-1/2 bg-gradient-to-r from-transparent via-green-200/90 to-transparent blur-lg" />
-            <div className="absolute inset-0 h-1.5 -translate-y-1/2 bg-gradient-to-r from-transparent via-green-200 to-transparent blur-md" />
-            <div className="absolute inset-0 h-0.5 -translate-y-1/2 bg-gradient-to-r from-transparent via-green-500 to-transparent" />
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  );
-};
+// Same static grid as login + profile pages
+const StaticGrid = ({ isDark }: { isDark: boolean }) => (
+  <div
+    className="fixed inset-0 pointer-events-none z-0"
+    style={{ background: isDark ? '#0a0f0a' : '#f8faf8' }}
+  >
+    <div
+      className="absolute inset-0 opacity-40"
+      style={{
+        backgroundImage: `
+          linear-gradient(to right, rgba(34, 197, 94, 0.3) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(34, 197, 94, 0.3) 1px, transparent 1px)
+        `,
+        backgroundSize: 'clamp(40px, 8vw, 100px) clamp(40px, 8vw, 100px)',
+      }}
+    />
+    <div
+      className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full"
+      style={{
+        background: isDark
+          ? 'radial-gradient(circle, rgba(34,197,94,0.12) 0%, transparent 70%)'
+          : 'radial-gradient(circle, rgba(34,197,94,0.08) 0%, transparent 70%)',
+      }}
+    />
+    <div
+      className="absolute -bottom-32 -right-32 w-[400px] h-[400px] rounded-full"
+      style={{
+        background: isDark
+          ? 'radial-gradient(circle, rgba(74,222,128,0.09) 0%, transparent 70%)'
+          : 'radial-gradient(circle, rgba(74,222,128,0.06) 0%, transparent 70%)',
+      }}
+    />
+  </div>
+);
 
 const AI_PROVIDERS = [
-  { id: 'openai', label: 'OpenAI', models: ['gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo'] },
-  { id: 'gemini', label: 'Google Gemini', models: ['gemini-2.0-flash', 'gemini-1.5-pro'] },
-  { id: 'groq', label: 'Groq', models: ['llama-3.3-70b-versatile', 'mixtral-8x7b-32768'] },
-  { id: 'anthropic', label: 'Anthropic', models: ['claude-3-5-sonnet', 'claude-3-haiku'] },
+  { id: 'openai',    label: 'OpenAI',         hint: 'platform.openai.com/api-keys' },
+  { id: 'gemini',    label: 'Google Gemini',   hint: 'aistudio.google.com' },
+  { id: 'groq',      label: 'Groq',            hint: 'console.groq.com' },
+  { id: 'anthropic', label: 'Anthropic',       hint: 'console.anthropic.com' },
 ];
 
 type ToastType = 'success' | 'error';
-
-interface Toast {
-  message: string;
-  type: ToastType;
-}
+interface Toast { message: string; type: ToastType; }
 
 export default function SettingsPage() {
   const router = useRouter();
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true); // SSR-safe default
 
-  // AI API state
   const [selectedProvider, setSelectedProvider] = useState(AI_PROVIDERS[0]);
   const [providerDropdownOpen, setProviderDropdownOpen] = useState(false);
   const [apiKey, setApiKey] = useState('');
   const [showKey, setShowKey] = useState(false);
   const [apiKeySaved, setApiKeySaved] = useState(false);
 
-  // Profile state
   const [username, setUsername] = useState('john_dev');
   const [usernameSaved, setUsernameSaved] = useState(false);
 
-  // Toast
   const [toast, setToast] = useState<Toast | null>(null);
 
+  const isDark = darkMode;
+
+  // SSR-safe: only read localStorage on the client after mount
   useEffect(() => {
-    const isDark = localStorage.getItem('darkMode') === 'true' ||
-      (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    setDarkMode(isDark);
-    if (isDark) document.documentElement.classList.add('dark');
+    const stored = localStorage.getItem('darkMode');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    setDarkMode(stored ? stored === 'true' : prefersDark);
   }, []);
 
   const toggleDarkMode = () => {
     setDarkMode(prev => {
       const next = !prev;
-      if (next) {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('darkMode', 'true');
-      } else {
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('darkMode', 'false');
-      }
+      localStorage.setItem('darkMode', String(next));
       return next;
     });
   };
@@ -126,11 +88,7 @@ export default function SettingsPage() {
   };
 
   const handleSaveApiKey = () => {
-    if (!apiKey.trim()) {
-      showToast('Please enter an API key', 'error');
-      return;
-    }
-    // Save to localStorage or your backend here
+    if (!apiKey.trim()) { showToast('Please enter an API key', 'error'); return; }
     localStorage.setItem(`apiKey_${selectedProvider.id}`, apiKey);
     setApiKeySaved(true);
     setTimeout(() => setApiKeySaved(false), 2000);
@@ -138,133 +96,162 @@ export default function SettingsPage() {
   };
 
   const handleSaveUsername = () => {
-    if (!username.trim()) {
-      showToast('Username cannot be empty', 'error');
-      return;
-    }
+    if (!username.trim()) { showToast('Username cannot be empty', 'error'); return; }
     setUsernameSaved(true);
     setTimeout(() => setUsernameSaved(false), 2000);
     showToast('Username updated successfully', 'success');
   };
 
-  const handleLogout = () => {
-    // Add your logout logic here
-    router.push('/');
+  const handleLogout = () => router.push('/');
+
+  // ── Palette (mirrors login + profile pages) ──────────────────────────
+  const pageBg     = isDark ? '#0a0f0a'  : '#f8faf8';
+  const cardBg     = isDark ? '#0f1a0f'  : '#ffffff';
+  const cardBorder = isDark ? 'rgba(20,83,45,0.4)' : 'rgba(229,231,235,1)';
+  const textPrimary   = isDark ? '#ffffff'        : '#111827';
+  const textMuted     = isDark ? 'rgba(187,247,208,0.4)' : '#6b7280';
+  const labelColor    = isDark ? 'rgba(134,239,172,0.6)'  : '#6b7280';
+  const inputBg       = isDark ? '#0a140a'  : '#f9fafb';
+  const inputBorder   = isDark ? 'rgba(20,83,45,0.5)'  : '#e5e7eb';
+  const inputFocus    = 'rgba(74,222,128,0.5)';
+  const dividerColor  = isDark ? 'rgba(20,83,45,0.3)'  : '#f3f4f6';
+  const rowHoverBg    = isDark ? 'rgba(20,83,45,0.2)'  : '#f9fafb';
+  const dropdownBg    = isDark ? '#0f1a0f' : '#ffffff';
+  const dropdownHover = isDark ? 'rgba(20,83,45,0.3)'  : '#f0fdf4';
+  const navBg         = isDark ? 'rgba(10,15,10,0.92)' : 'rgba(248,250,248,0.92)';
+  const navBorder     = isDark ? 'rgba(20,83,45,0.3)'  : 'rgba(229,231,235,0.6)';
+
+  const cardStyle: React.CSSProperties = {
+    background: cardBg,
+    border: `1px solid ${cardBorder}`,
+    borderRadius: '1rem',
+    padding: '1.5rem',
+    boxShadow: isDark
+      ? '0 8px 40px rgba(0,0,0,0.5)'
+      : '0 4px 24px rgba(0,0,0,0.06)',
   };
 
-  const cardClass = `
-    relative bg-white/80 dark:bg-slate-800/60
-    backdrop-blur-md
-    border border-white/60 dark:border-slate-700/50
-    rounded-2xl p-5 sm:p-6 md:p-8
-    shadow-[8px_8px_24px_rgba(0,0,0,0.08),_-4px_-4px_16px_rgba(255,255,255,0.8)]
-    dark:shadow-[8px_8px_24px_rgba(0,0,0,0.4),_-4px_-4px_16px_rgba(255,255,255,0.04)]
-  `;
-
-  const inputClass = `
-    w-full px-4 py-3 rounded-xl
-    bg-gradient-to-br from-green-900/30 via-green-800/20 to-emerald-900/30
-    dark:from-green-900/40 dark:via-green-800/30 dark:to-emerald-900/40
-    border border-green-500/20 dark:border-green-500/20
-    text-slate-800 dark:text-white
-    placeholder-slate-400 dark:placeholder-slate-500
-    text-sm sm:text-base
-    focus:outline-none focus:ring-2 focus:ring-green-400/40
-    shadow-[inset_3px_3px_8px_rgba(0,0,0,0.08),_inset_-3px_-3px_8px_rgba(255,255,255,0.6)]
-    dark:shadow-[inset_3px_3px_8px_rgba(0,0,0,0.3),_inset_-3px_-3px_8px_rgba(255,255,255,0.05)]
-    transition-all duration-200
-  `;
-
-  const btnPrimary = `
-    flex items-center gap-2 px-5 py-2.5 rounded-xl
-    bg-gradient-to-br from-green-700 via-green-500 to-emerald-400
-    text-white font-semibold text-sm sm:text-base
-    shadow-[4px_4px_12px_rgba(34,197,94,0.3),_-2px_-2px_8px_rgba(255,255,255,0.1)]
-    hover:shadow-[6px_6px_16px_rgba(34,197,94,0.4)]
-    active:shadow-[inset_3px_3px_8px_rgba(0,0,0,0.2)]
-    transition-all duration-200
-  `;
+  const inputStyle: React.CSSProperties = {
+    width: '100%',
+    padding: '0.75rem 1rem',
+    borderRadius: '0.75rem',
+    background: inputBg,
+    border: `1px solid ${inputBorder}`,
+    color: textPrimary,
+    fontSize: '0.875rem',
+    outline: 'none',
+    transition: 'border-color 0.2s, box-shadow 0.2s',
+  };
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 relative ${darkMode ? 'dark bg-slate-900' : 'bg-slate-50'}`}>
-      <AnimatedGrid darkMode={darkMode} />
+    <div style={{ minHeight: '100vh', background: pageBg, color: textPrimary, position: 'relative' }}>
+      <StaticGrid isDark={isDark} />
 
       {/* Toast */}
       <AnimatePresence>
         {toast && (
           <motion.div
             initial={{ opacity: 0, y: -20, x: '-50%' }}
-            animate={{ opacity: 1, y: 0, x: '-50%' }}
-            exit={{ opacity: 0, y: -20, x: '-50%' }}
-            className={`fixed top-6 left-1/2 z-[100] flex items-center gap-2 px-5 py-3 rounded-xl shadow-xl text-sm font-medium
-              ${toast.type === 'success'
-                ? 'bg-green-500 text-white'
-                : 'bg-red-500 text-white'
-              }`}
+            animate={{ opacity: 1, y: 0,  x: '-50%' }}
+            exit={{   opacity: 0, y: -20, x: '-50%' }}
+            style={{
+              position: 'fixed', top: '1.5rem', left: '50%', zIndex: 200,
+              display: 'flex', alignItems: 'center', gap: '0.5rem',
+              padding: '0.75rem 1.25rem', borderRadius: '0.75rem',
+              fontWeight: 600, fontSize: '0.875rem',
+              background: toast.type === 'success' ? '#22c55e' : '#ef4444',
+              color: '#fff',
+              boxShadow: toast.type === 'success'
+                ? '0 4px 20px rgba(34,197,94,0.4)'
+                : '0 4px 20px rgba(239,68,68,0.4)',
+            }}
           >
-            {toast.type === 'success' ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+            {toast.type === 'success'
+              ? <Check style={{ width: 16, height: 16 }} />
+              : <AlertCircle style={{ width: 16, height: 16 }} />}
             {toast.message}
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8 py-3 bg-white/70 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200/60 dark:border-slate-700/40">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <button onClick={() => router.back()} className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-green-500 dark:hover:text-green-400 transition-colors">
-            <img src="/smart gauge.png" alt="Smart Gauge" className="w-8 h-8 object-contain" />
-            <span className="font-bold text-sm sm:text-base text-slate-800 dark:text-white">Smart Gauge</span>
+      <nav style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
+        padding: '0.75rem 1.5rem',
+        background: navBg,
+        borderBottom: `1px solid ${navBorder}`,
+        backdropFilter: 'blur(12px)',
+      }}>
+        <div style={{ maxWidth: '42rem', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
+           <button
+            onClick={() => router.back()}
+            className={`text-sm font-medium underline underline-offset-2 transition-colors ${
+              isDark ? 'text-green-400/70 hover:text-green-300' : 'text-gray-500 hover:text-gray-800'
+            }`}
+          >
+            Back
           </button>
 
-          <h1 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white absolute left-1/2 -translate-x-1/2">
+          <h1 style={{ fontWeight: 700, fontSize: '1rem', color: textPrimary, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
             Settings
           </h1>
 
           <button
             onClick={toggleDarkMode}
-            className="p-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-green-400 transition-all duration-200 bg-white/50 dark:bg-slate-800/50"
+            style={{
+              padding: '0.5rem', borderRadius: '0.75rem', cursor: 'pointer',
+              background: isDark ? 'rgba(20,83,45,0.2)' : '#f3f4f6',
+              border: `1px solid ${isDark ? 'rgba(20,83,45,0.4)' : '#e5e7eb'}`,
+              color: isDark ? '#4ade80' : '#4b5563',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.2s',
+            }}
+            aria-label="Toggle dark mode"
           >
-            {darkMode ? <Sun className="w-4 h-4 text-green-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
+            {isDark ? <Sun style={{ width: 16, height: 16 }} /> : <Moon style={{ width: 16, height: 16 }} />}
           </button>
         </div>
       </nav>
 
       {/* Main */}
-      <main className="relative z-10 pt-24 pb-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-2xl mx-auto space-y-6">
+      <main style={{ position: 'relative', zIndex: 10, paddingTop: '6rem', paddingBottom: '4rem', paddingLeft: '1rem', paddingRight: '1rem' }}>
+        <div style={{ maxWidth: '42rem', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
           {/* Section label */}
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-            <p className="text-xs font-semibold uppercase tracking-widest text-green-500 mb-1">Configuration</p>
-            <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">Your Preferences</h2>
+            <p style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#4ade80', marginBottom: '0.25rem' }}>
+              Configuration
+            </p>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: textPrimary }}>Your Preferences</h2>
           </motion.div>
 
-          {/* ── AI API Section ── */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className={cardClass}>
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 rounded-xl bg-green-500/10 border border-green-500/20">
-                <Key className="w-5 h-5 text-green-500" />
+          {/* ── AI Provider card ── */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} style={cardStyle}>
+            {/* Card header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+              <div style={{ padding: '0.5rem', borderRadius: '0.75rem', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)' }}>
+                <Key style={{ width: 20, height: 20, color: '#4ade80' }} />
               </div>
               <div>
-                <h3 className="font-bold text-slate-800 dark:text-white text-base sm:text-lg">AI Provider</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Connect your own API key</p>
+                <h3 style={{ fontWeight: 700, fontSize: '1rem', color: textPrimary }}>AI Provider</h3>
+                <p style={{ fontSize: '0.75rem', color: textMuted }}>Connect your own API key</p>
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {/* Provider dropdown */}
               <div>
-                <label className="block text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">
-                  AI Provider
+                <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: labelColor, marginBottom: '0.5rem' }}>
+                  Provider
                 </label>
-                <div className="relative">
+                <div style={{ position: 'relative' }}>
                   <button
                     onClick={() => setProviderDropdownOpen(p => !p)}
-                    className={`${inputClass} flex items-center justify-between cursor-pointer text-left`}
+                    style={{ ...inputStyle, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', textAlign: 'left' }}
                   >
-                    <span className="text-slate-800 dark:text-white font-medium">{selectedProvider.label}</span>
+                    <span style={{ fontWeight: 600, color: textPrimary }}>{selectedProvider.label}</span>
                     <motion.div animate={{ rotate: providerDropdownOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                      <ChevronDown className="w-4 h-4 text-slate-400" />
+                      <ChevronDown style={{ width: 16, height: 16, color: textMuted }} />
                     </motion.div>
                   </button>
 
@@ -272,19 +259,34 @@ export default function SettingsPage() {
                     {providerDropdownOpen && (
                       <motion.div
                         initial={{ opacity: 0, y: -8, scaleY: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scaleY: 1 }}
-                        exit={{ opacity: 0, y: -8, scaleY: 0.95 }}
-                        className="absolute top-full left-0 right-0 mt-2 z-50 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden"
+                        animate={{ opacity: 1, y: 0,  scaleY: 1 }}
+                        exit={{   opacity: 0, y: -8, scaleY: 0.95 }}
+                        style={{
+                          position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 50,
+                          background: dropdownBg,
+                          border: `1px solid ${cardBorder}`,
+                          borderRadius: '0.75rem',
+                          overflow: 'hidden',
+                          boxShadow: '0 12px 40px rgba(0,0,0,0.4)',
+                        }}
                       >
-                        {AI_PROVIDERS.map((provider) => (
+                        {AI_PROVIDERS.map((p) => (
                           <button
-                            key={provider.id}
-                            onClick={() => { setSelectedProvider(provider); setProviderDropdownOpen(false); setApiKey(''); }}
-                            className={`w-full flex items-center justify-between px-4 py-3 text-sm hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors
-                              ${selectedProvider.id === provider.id ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 font-semibold' : 'text-slate-700 dark:text-slate-300'}`}
+                            key={p.id}
+                            onClick={() => { setSelectedProvider(p); setProviderDropdownOpen(false); setApiKey(''); }}
+                            style={{
+                              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                              padding: '0.75rem 1rem', fontSize: '0.875rem', cursor: 'pointer', border: 'none',
+                              background: selectedProvider.id === p.id ? dropdownHover : 'transparent',
+                              color: selectedProvider.id === p.id ? '#4ade80' : textPrimary,
+                              fontWeight: selectedProvider.id === p.id ? 600 : 400,
+                              transition: 'background 0.15s',
+                            }}
+                            onMouseEnter={e => (e.currentTarget.style.background = dropdownHover)}
+                            onMouseLeave={e => (e.currentTarget.style.background = selectedProvider.id === p.id ? dropdownHover : 'transparent')}
                           >
-                            {provider.label}
-                            {selectedProvider.id === provider.id && <Check className="w-4 h-4" />}
+                            {p.label}
+                            {selectedProvider.id === p.id && <Check style={{ width: 14, height: 14 }} />}
                           </button>
                         ))}
                       </motion.div>
@@ -295,116 +297,133 @@ export default function SettingsPage() {
 
               {/* API Key input */}
               <div>
-                <label className="block text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">
+                <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: labelColor, marginBottom: '0.5rem' }}>
                   API Key
                 </label>
-                <div className="relative">
+                <div style={{ position: 'relative' }}>
                   <input
                     type={showKey ? 'text' : 'password'}
                     value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
+                    onChange={e => setApiKey(e.target.value)}
                     placeholder={`Enter your ${selectedProvider.label} API key`}
-                    className={`${inputClass} pr-12`}
+                    style={{ ...inputStyle, paddingRight: '3rem' }}
+                    onFocus={e => { e.currentTarget.style.borderColor = '#4ade80'; e.currentTarget.style.boxShadow = `0 0 0 3px ${inputFocus}`; }}
+                    onBlur={e  => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none'; }}
                   />
                   <button
                     onClick={() => setShowKey(p => !p)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-green-500 transition-colors"
+                    style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: textMuted, display: 'flex' }}
                   >
-                    {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showKey ? <EyeOff style={{ width: 16, height: 16 }} /> : <Eye style={{ width: 16, height: 16 }} />}
                   </button>
                 </div>
-                <p className="mt-1.5 text-xs text-slate-400 dark:text-slate-500">
-                  {selectedProvider.id === 'openai' && 'Get your key at platform.openai.com/api-keys'}
-                  {selectedProvider.id === 'gemini' && 'Get your key at aistudio.google.com'}
-                  {selectedProvider.id === 'groq' && 'Get your key at console.groq.com'}
-                  {selectedProvider.id === 'anthropic' && 'Get your key at console.anthropic.com'}
+                <p style={{ marginTop: '0.4rem', fontSize: '0.7rem', color: textMuted }}>
+                  Get your key at {selectedProvider.hint}
                 </p>
               </div>
 
-              {/* Save button */}
-              <div className="flex justify-end pt-1">
+              {/* Save API key */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '0.25rem' }}>
                 <motion.button
                   onClick={handleSaveApiKey}
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
-                  className={btnPrimary}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '0.5rem',
+                    padding: '0.625rem 1.25rem', borderRadius: '0.75rem', border: 'none', cursor: 'pointer',
+                    background: 'linear-gradient(135deg, #16a34a, #22c55e, #4ade80)',
+                    color: '#fff', fontWeight: 700, fontSize: '0.875rem',
+                    boxShadow: '0 4px 20px rgba(34,197,94,0.35)',
+                  }}
                 >
-                  {apiKeySaved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+                  {apiKeySaved ? <Check style={{ width: 16, height: 16 }} /> : <Save style={{ width: 16, height: 16 }} />}
                   {apiKeySaved ? 'Saved!' : 'Save API Key'}
                 </motion.button>
               </div>
             </div>
           </motion.div>
 
-          {/* ── Profile Section ── */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} className={cardClass}>
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 rounded-xl bg-green-500/10 border border-green-500/20">
-                <User className="w-5 h-5 text-green-500" />
+          {/* ── Profile card ── */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} style={cardStyle}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+              <div style={{ padding: '0.5rem', borderRadius: '0.75rem', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)' }}>
+                <User style={{ width: 20, height: 20, color: '#4ade80' }} />
               </div>
               <div>
-                <h3 className="font-bold text-slate-800 dark:text-white text-base sm:text-lg">Profile</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Update your account details</p>
+                <h3 style={{ fontWeight: 700, fontSize: '1rem', color: textPrimary }}>Profile</h3>
+                <p style={{ fontSize: '0.75rem', color: textMuted }}>Update your account details</p>
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
-                <label className="block text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">
+                <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: labelColor, marginBottom: '0.5rem' }}>
                   Username
                 </label>
                 <input
                   type="text"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={e => setUsername(e.target.value)}
                   placeholder="Enter username"
-                  className={inputClass}
+                  style={inputStyle}
+                  onFocus={e => { e.currentTarget.style.borderColor = '#4ade80'; e.currentTarget.style.boxShadow = `0 0 0 3px ${inputFocus}`; }}
+                  onBlur={e  => { e.currentTarget.style.borderColor = inputBorder; e.currentTarget.style.boxShadow = 'none'; }}
                 />
               </div>
 
-              <div className="flex justify-end pt-1">
+              <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '0.25rem' }}>
                 <motion.button
                   onClick={handleSaveUsername}
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
-                  className={btnPrimary}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '0.5rem',
+                    padding: '0.625rem 1.25rem', borderRadius: '0.75rem', border: 'none', cursor: 'pointer',
+                    background: 'linear-gradient(135deg, #16a34a, #22c55e, #4ade80)',
+                    color: '#fff', fontWeight: 700, fontSize: '0.875rem',
+                    boxShadow: '0 4px 20px rgba(34,197,94,0.35)',
+                  }}
                 >
-                  {usernameSaved ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+                  {usernameSaved ? <Check style={{ width: 16, height: 16 }} /> : <Save style={{ width: 16, height: 16 }} />}
                   {usernameSaved ? 'Saved!' : 'Update Profile'}
                 </motion.button>
               </div>
             </div>
           </motion.div>
 
-          {/* ── Logout ── */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.26 }} className={cardClass}>
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 rounded-xl bg-red-500/10 border border-red-500/20">
-                <LogOut className="w-5 h-5 text-red-500" />
+          {/* ── Account / Logout card ── */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.26 }} style={cardStyle}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+              <div style={{ padding: '0.5rem', borderRadius: '0.75rem', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                <LogOut style={{ width: 20, height: 20, color: '#ef4444' }} />
               </div>
               <div>
-                <h3 className="font-bold text-slate-800 dark:text-white text-base sm:text-lg">Account</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Manage your session</p>
+                <h3 style={{ fontWeight: 700, fontSize: '1rem', color: textPrimary }}>Account</h3>
+                <p style={{ fontSize: '0.75rem', color: textMuted }}>Manage your session</p>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                Signed in as <span className="font-semibold text-slate-700 dark:text-slate-200">@{username}</span>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+              <p style={{ fontSize: '0.875rem', color: textMuted }}>
+                Signed in as{' '}
+                <span style={{ fontWeight: 600, color: textPrimary }}>@{username}</span>
               </p>
               <motion.button
                 onClick={handleLogout}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl
-                  border border-red-300 dark:border-red-700
-                  text-red-500 dark:text-red-400
-                  font-semibold text-sm sm:text-base
-                  hover:bg-red-50 dark:hover:bg-red-900/20
-                  active:bg-red-100 dark:active:bg-red-900/30
-                  transition-all duration-200 w-full sm:w-auto justify-center"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.5rem',
+                  padding: '0.625rem 1.25rem', borderRadius: '0.75rem', cursor: 'pointer',
+                  background: 'transparent',
+                  border: `1px solid ${isDark ? 'rgba(239,68,68,0.4)' : '#fca5a5'}`,
+                  color: '#ef4444', fontWeight: 600, fontSize: '0.875rem',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.08)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut style={{ width: 16, height: 16 }} />
                 Log out
               </motion.button>
             </div>
@@ -413,7 +432,7 @@ export default function SettingsPage() {
           {/* Footer */}
           <motion.p
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
-            className="text-center text-xs text-slate-400 dark:text-slate-600 pb-4"
+            style={{ textAlign: 'center', fontSize: '0.7rem', color: isDark ? 'rgba(20,83,45,0.8)' : '#9ca3af', paddingBottom: '1rem' }}
           >
             Smart Gauge · Your keys are stored locally and never shared
           </motion.p>

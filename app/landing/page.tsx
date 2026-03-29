@@ -80,6 +80,7 @@ export default function LandingPage() {
 
   const [showTooltip, setShowTooltip] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const featuresRef = useRef<HTMLDivElement | null>(null);
   const pricingRef = useRef<HTMLDivElement | null>(null);
@@ -122,6 +123,7 @@ export default function LandingPage() {
 
   const handleSend = async () => {
     if (inputValue.trim()) {
+      setIsLoading(true);
       await controls.start({
         y: 1000,
         opacity: 0,
@@ -132,9 +134,12 @@ export default function LandingPage() {
   };
 
   return (
-    <div className={`min-h-screen overflow-y-auto transition-colors duration-300 relative ${
+    // ✅ FIX 1: removed `overflow-y-auto` from root div — the page scrolls naturally.
+    // The fixed AnimatedGrid sits behind everything via z-0; the content stacks above it.
+    <div className={`transition-colors duration-300 ${
       isDark ? 'bg-slate-900 text-white' : 'bg-surface text-surfaceDark'
-    }`}>
+    }`} style={{ minHeight: '100vh', position: 'relative', overflowX: 'hidden' }}>
+      <style>{`html, body { overflow-y: auto !important; height: auto !important; }`}</style>
       <AnimatedGrid darkMode={darkMode} />
 
       {/* Navigation */}
@@ -165,13 +170,13 @@ export default function LandingPage() {
               }`}>
               Pricing
             </button>
-          <Link href='/landing/login'>
-            <button className={`cursor-pointer hidden md:inline-block font-medium text-sm sm:text-base transition-colors hover:text-primary ${
-              isDark ? 'text-gray-300' : 'text-surfaceDark'
-            }`}>
-              Log in
-            </button>
-              </Link>
+            <Link href='/landing/login'>
+              <button className={`cursor-pointer inline-block font-medium text-sm sm:text-base transition-colors hover:text-primary ${
+                isDark ? 'text-gray-300' : 'text-surfaceDark'
+              }`}>
+                Log in
+              </button>
+            </Link>
             <button
               onClick={toggleDarkMode}
               className="cursor-pointer p-2 rounded-neu shadow-neu hover:shadow-neuInset transition-all duration-300 active:shadow-neuInset"
@@ -181,7 +186,7 @@ export default function LandingPage() {
             </button>
 
             <button
-              onClick={focusInput}  // ← focus input on click
+              onClick={focusInput}
               className="cursor-pointer px-6 py-2 rounded-2xl
                 bg-linear-to-br from-primaryDark via-primary via-green-400 to-primaryLight
                 text-surfaceLight font-semibold text-sm sm:text-base md:text-lg transition-all duration-300
@@ -194,12 +199,13 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <main className="relative z-10 pt-20 mt-12 pb-8 sm:pb-4 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
+      {/* ✅ FIX 2: <main> now wraps ALL page content — hero, features, and pricing.
+           Previously </main> closed prematurely after the hero, orphaning the sections. */}
+      <main style={{ position: 'relative', zIndex: 10, paddingTop: '5rem' }}>
+        <div className="max-w-6xl mx-auto mt-12 pb-8 px-4 sm:px-6 lg:px-8">
 
           {/* Hero Text */}
-          <div className="text-center text-center mb-16 md:mb-8 lg:mb-16">
+          <div className="text-center mb-16 md:mb-8 lg:mb-16">
             <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-8 leading-tight px-4">
               <span className={isDark ? 'text-white' : 'text-surfaceDark'}>
                 Understand what your smart contracts{' '}
@@ -230,6 +236,56 @@ export default function LandingPage() {
 
           {/* Input Box */}
           <motion.div animate={controls} className="max-w-3xl mx-auto relative">
+
+            {/* Loading spinner — sits behind the card via z ordering */}
+            
+{isLoading && (
+  <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 0 }}>
+     {/* Outer slow ring */}
+                <div className="absolute w-[110%] h-[110%] rounded-3xl border-2 border-green-400/20" style={{ animation: 'spin 3s linear infinite' }} />
+                {/* Mid ring */}
+                <div className="absolute w-[105%] h-[105%] rounded-3xl border border-green-400/30" style={{ animation: 'spin 2s linear infinite reverse' }} />
+                {/* Glow ring — conic gradient spinner */}
+                <div
+                  className="absolute w-[108%] h-[108%] rounded-3xl"
+                  style={{
+                    background: 'conic-gradient(from 0deg, transparent 0%, rgba(34,197,94,0.6) 40%, transparent 60%)',
+                    animation: 'spin 1.2s linear infinite',
+                    filter: 'blur(6px)',
+                  }}
+                />
+                {/* Tight bright arc */}
+                <div
+                  className="absolute w-[104%] h-[104%] rounded-3xl"
+                  style={{
+                    background: 'conic-gradient(from 180deg, transparent 0%, rgba(74,222,128,0.9) 20%, transparent 35%)',
+                    animation: 'spin 1.2s linear infinite',
+                    filter: 'blur(2px)',
+                  }}
+                />
+                {/* Corner sparkle dots */}
+                {[0, 90, 180, 270].map((deg) => (
+                  <div
+                    key={deg}
+                    className="absolute w-2 h-2 rounded-full bg-green-400"
+                    style={{
+                      top: '50%',
+                      left: '50%',
+                      transform: `rotate(${deg}deg) translateX(min(52%, 180px)) translateY(-50%)`,
+                      animation: `pulse 1.2s ease-in-out infinite`,
+                      animationDelay: `${deg / 360 * 1.2}s`,
+                      boxShadow: '0 0 8px 2px rgba(74,222,128,0.8)',
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Keyframes injected once */}
+            <style>{`
+              @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+              @keyframes pulse { 0%, 100% { opacity: 0.4; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
+            `}</style>
             <div className="absolute -left-8 sm:-left-16 md:-left-24 top-0 w-32 sm:w-48 md:w-64 h-32 sm:h-48 md:h-64 pointer-events-none hidden lg:block">
               <svg viewBox="0 0 200 200" className="w-full h-full">
                 <path d="M 150 10 Q 100 50, 100 100" stroke="currentColor" strokeWidth="20" fill="none" className="text-primaryLight opacity-60" strokeLinecap="round" />
@@ -241,9 +297,9 @@ export default function LandingPage() {
               </svg>
             </div>
 
-            <div className={`relative rounded-2xl shadow-neu p-3 sm:p-4 md:p-6 mt-12 sm:mt-32 md:mt-8 lg:mt-24 transition-all duration-300 ${
-              isDark ? 'bg-slate-800' : 'bg-surface'
-            }`}>
+           <div className={`relative rounded-2xl shadow-neu p-3 sm:p-4 md:p-6 mt-12 sm:mt-32 md:mt-8 lg:mt-24 transition-all duration-300 ${
+  isDark ? 'bg-slate-800' : 'bg-surface'
+}`} style={{ position: 'relative', zIndex: 1 }}>
               <label className={`block text-sm sm:text-base md:text-lg font-medium mb-4 ${isDark ? 'text-gray-300' : 'text-surfaceDark'}`}>
                 paste in your smart contract and AI does the magic:
               </label>
@@ -312,192 +368,192 @@ export default function LandingPage() {
             <p>Press <kbd className="px-2 py-1 shadow-neu rounded text-xs sm:text-sm">⌘</kbd> + <kbd className="px-2 py-1 shadow-neu rounded text-xs sm:text-sm">Enter</kbd> to send</p>
           </motion.div>
         </div>
-      
 
-      {/* ─── FEATURES SECTION ─── */}
-      <section
-        ref={featuresRef}
-        className={`relative z-10 py-24 px-4 sm:px-6 lg:px-8 transition-colors duration-300 ${
-          isDark ? 'bg-slate-800/60' : 'bg-white/60'
-        } backdrop-blur-sm`}
-      >
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className={`text-3xl sm:text-4xl md:text-5xl font-bold mb-4 ${isDark ? 'text-white' : 'text-surfaceDark'}`}>
-              Everything you need before you deploy
-            </h2>
-            <p className={`text-base sm:text-lg max-w-2xl mx-auto ${isDark ? 'text-gray-400' : 'text-surfaceDark/70'}`}>
-              Stop guessing. Start knowing exactly what your contract will cost.
-            </p>
-          </motion.div>
+        {/* ─── FEATURES SECTION ─── */}
+        <section
+          ref={featuresRef}
+          className={`relative z-10 py-24 px-4 sm:px-6 lg:px-8 transition-colors duration-300 ${
+            isDark ? 'bg-slate-800/60' : 'bg-white/60'
+          } backdrop-blur-sm`}
+        >
+          <div className="max-w-6xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className={`text-3xl sm:text-4xl md:text-5xl font-bold mb-4 ${isDark ? 'text-white' : 'text-surfaceDark'}`}>
+                Everything you need before you deploy
+              </h2>
+              <p className={`text-base sm:text-lg max-w-2xl mx-auto ${isDark ? 'text-gray-400' : 'text-surfaceDark/70'}`}>
+                Stop guessing. Start knowing exactly what your contract will cost.
+              </p>
+            </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: <Zap className="w-8 h-8 text-green-400" />,
-                title: "Instant Gas Estimates",
-                description: "Paste your Solidity contract and get accurate gas cost estimates in seconds — before you deploy a single line to mainnet.",
-              },
-              {
-                icon: <BarChart3 className="w-8 h-8 text-green-400" />,
-                title: "Complexity Insights",
-                description: "Understand which parts of your contract are gas-heavy and why. Get a breakdown of function-level complexity so you know exactly where the costs come from.",
-              },
-              {
-                icon: <Bot className="w-8 h-8 text-green-400" />,
-                title: "AI-Driven Optimisation",
-                description: "Let AI suggest concrete improvements to reduce your contract's gas footprint — powered by OpenAI or Gemini, your choice.",
-              },
-            ].map((feature, i) => (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                {
+                  icon: <Zap className="w-8 h-8 text-green-400" />,
+                  title: "Instant Gas Estimates",
+                  description: "Paste your Solidity contract and get accurate gas cost estimates in seconds — before you deploy a single line to mainnet.",
+                },
+                {
+                  icon: <BarChart3 className="w-8 h-8 text-green-400" />,
+                  title: "Complexity Insights",
+                  description: "Understand which parts of your contract are gas-heavy and why. Get a breakdown of function-level complexity so you know exactly where the costs come from.",
+                },
+                {
+                  icon: <Bot className="w-8 h-8 text-green-400" />,
+                  title: "AI-Driven Optimisation",
+                  description: "Let AI suggest concrete improvements to reduce your contract's gas footprint — powered by OpenAI or Gemini, your choice.",
+                },
+              ].map((feature, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: i * 0.15 }}
+                  viewport={{ once: true }}
+                  className={`rounded-2xl p-6 shadow-neu transition-colors duration-300 ${
+                    isDark ? 'bg-slate-700/50' : 'bg-surface'
+                  }`}
+                >
+                  <div className="mb-4">{feature.icon}</div>
+                  <h3 className={`text-lg font-bold mb-2 ${isDark ? 'text-white' : 'text-surfaceDark'}`}>
+                    {feature.title}
+                  </h3>
+                  <p className={`text-sm leading-relaxed ${isDark ? 'text-gray-400' : 'text-surfaceDark/70'}`}>
+                    {feature.description}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ─── PRICING SECTION ─── */}
+        <section
+          ref={pricingRef}
+          className={`relative z-10 py-24 px-4 sm:px-6 lg:px-8 transition-colors duration-300`}
+        >
+          <div className="max-w-5xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className={`text-3xl sm:text-4xl md:text-5xl font-bold mb-4 ${isDark ? 'text-white' : 'text-surfaceDark'}`}>
+                Simple pricing
+              </h2>
+              <p className={`text-base sm:text-lg max-w-xl mx-auto ${isDark ? 'text-gray-400' : 'text-surfaceDark/70'}`}>
+                Start for free. Scale on your own terms.
+              </p>
+            </motion.div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+              {/* Free Tier */}
               <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: i * 0.15 }}
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5 }}
                 viewport={{ once: true }}
-                className={`rounded-2xl p-6 shadow-neu transition-colors duration-300 ${
+                className={`rounded-2xl p-8 shadow-neu transition-colors duration-300 ${
                   isDark ? 'bg-slate-700/50' : 'bg-surface'
                 }`}
               >
-                <div className="mb-4">{feature.icon}</div>
-                <h3 className={`text-lg font-bold mb-2 ${isDark ? 'text-white' : 'text-surfaceDark'}`}>
-                  {feature.title}
-                </h3>
-                <p className={`text-sm leading-relaxed ${isDark ? 'text-gray-400' : 'text-surfaceDark/70'}`}>
-                  {feature.description}
-                </p>
+                <div className="mb-6">
+                  <h3 className={`text-xl font-bold mb-1 ${isDark ? 'text-white' : 'text-surfaceDark'}`}>Free</h3>
+                  <div className="flex items-end gap-1">
+                    <span className={`text-4xl font-bold ${isDark ? 'text-white' : 'text-surfaceDark'}`}>$0</span>
+                    <span className={`text-sm mb-1 ${isDark ? 'text-gray-400' : 'text-surfaceDark/60'}`}>/month</span>
+                  </div>
+                  <p className={`text-sm mt-2 ${isDark ? 'text-gray-400' : 'text-surfaceDark/70'}`}>
+                    Daily quota included — no credit card needed.
+                  </p>
+                </div>
+
+                <ul className="space-y-3 mb-8">
+                  {[
+                    "Gas estimates",
+                    "Complexity insights",
+                    "AI optimisation suggestions",
+                    "Daily usage quota",
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-center gap-3">
+                      <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
+                      <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-surfaceDark/80'}`}>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  onClick={focusInput}
+                  className={`w-full cursor-pointer py-3 rounded-xl font-semibold text-sm transition-all duration-300 shadow-neu hover:shadow-neuInset active:shadow-neuInset ${
+                    isDark ? 'text-white' : 'text-surfaceDark'
+                  }`}>
+                  Get started free
+                </button>
               </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* ─── PRICING SECTION ─── */}
-      <section
-        ref={pricingRef}
-        className={`relative z-10 py-24 px-4 sm:px-6 lg:px-8 transition-colors duration-300`}
-      >
-        <div className="max-w-5xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className={`text-3xl sm:text-4xl md:text-5xl font-bold mb-4 ${isDark ? 'text-white' : 'text-surfaceDark'}`}>
-              Simple pricing
-            </h2>
-            <p className={`text-base sm:text-lg max-w-xl mx-auto ${isDark ? 'text-gray-400' : 'text-surfaceDark/70'}`}>
-              Start for free. Scale on your own terms.
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-            {/* Free Tier */}
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
-              className={`rounded-2xl p-8 shadow-neu transition-colors duration-300 ${
-                isDark ? 'bg-slate-700/50' : 'bg-surface'
-              }`}
-            >
-              <div className="mb-6">
-                <h3 className={`text-xl font-bold mb-1 ${isDark ? 'text-white' : 'text-surfaceDark'}`}>Free</h3>
-                <div className="flex items-end gap-1">
-                  <span className={`text-4xl font-bold ${isDark ? 'text-white' : 'text-surfaceDark'}`}>$0</span>
-                  <span className={`text-sm mb-1 ${isDark ? 'text-gray-400' : 'text-surfaceDark/60'}`}>/month</span>
+              {/* Unlimited Tier */}
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                viewport={{ once: true }}
+                className="rounded-2xl p-8 transition-colors duration-300
+                  bg-linear-to-br from-primaryDark via-primary to-primaryLight
+                  shadow-[8px_8px_18px_rgba(0,0,0,0.35),_-8px_-8px_18px_rgba(255,255,255,0.15)]
+                  relative overflow-hidden"
+              >
+                {/* Badge */}
+                <div className="absolute top-4 right-4 bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">
+                  Unlimited
                 </div>
-                <p className={`text-sm mt-2 ${isDark ? 'text-gray-400' : 'text-surfaceDark/70'}`}>
-                  Daily quota included — no credit card needed.
-                </p>
-              </div>
 
-              <ul className="space-y-3 mb-8">
-                {[
-                  "Gas estimates",
-                  "Complexity insights",
-                  "AI optimisation suggestions",
-                  "Daily usage quota",
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
-                    <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-surfaceDark/80'}`}>{item}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <button
-                onClick={focusInput}
-                className={`w-full py-3 rounded-xl font-semibold text-sm transition-all duration-300 shadow-neu hover:shadow-neuInset active:shadow-neuInset ${
-                  isDark ? 'text-white' : 'text-surfaceDark'
-                }`}>
-                Get started free
-              </button>
-            </motion.div>
-
-            {/* Unlimited Tier */}
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              viewport={{ once: true }}
-              className="rounded-2xl p-8 transition-colors duration-300
-                bg-linear-to-br from-primaryDark via-primary to-primaryLight
-                shadow-[8px_8px_18px_rgba(0,0,0,0.35),_-8px_-8px_18px_rgba(255,255,255,0.15)]
-                relative overflow-hidden"
-            >
-              {/* Badge */}
-              <div className="absolute top-4 right-4 bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">
-                Unlimited
-              </div>
-
-              <div className="mb-6">
-                <h3 className="text-xl font-bold mb-1 text-white">Bring Your Own Key</h3>
-                <div className="flex items-end gap-1">
-                  <span className="text-4xl font-bold text-white">Free</span>
+                <div className="mb-6">
+                  <h3 className="text-xl font-bold mb-1 text-white">Bring Your Own Key</h3>
+                  <div className="flex items-end gap-1">
+                    <span className="text-4xl font-bold text-white">Free</span>
+                  </div>
+                  <p className="text-sm mt-2 text-white/70">
+                    Set your own OpenAI or Gemini API key and get unlimited access — no quotas, no limits.
+                  </p>
                 </div>
-                <p className="text-sm mt-2 text-white/70">
-                  Set your own OpenAI or Gemini API key and get unlimited access — no quotas, no limits.
-                </p>
-              </div>
 
-              <ul className="space-y-3 mb-8">
-                {[
-                  "Everything in Free",
-                  "Unlimited gas estimates",
-                  "Unlimited AI suggestions",
-                  "OpenAI or Gemini — your choice",
-                  "Your key, your data",
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-white flex-shrink-0" />
-                    <span className="text-sm text-white/90">{item}</span>
-                  </li>
-                ))}
-              </ul>
+                <ul className="space-y-3 mb-8">
+                  {[
+                    "Everything in Free",
+                    "Unlimited gas estimates",
+                    "Unlimited AI suggestions",
+                    "OpenAI or Gemini — your choice",
+                    "Your key, your data",
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-center gap-3">
+                      <Check className="w-4 h-4 text-white flex-shrink-0" />
+                      <span className="text-sm text-white/90">{item}</span>
+                    </li>
+                  ))}
+                </ul>
 
-              <button
-                onClick={focusInput}
-                className="w-full py-3 rounded-xl font-semibold text-sm text-primary bg-white transition-all duration-300
-                  shadow-[4px_4px_10px_rgba(0,0,0,0.2)] hover:shadow-[2px_2px_6px_rgba(0,0,0,0.15)]
-                  active:shadow-[inset_4px_4px_8px_rgba(0,0,0,0.2)]">
-                Start with your key
-              </button>
-            </motion.div>
+ <Link href='/landing/login'>
+                <button
+                 
+                  className="w-full py-3 cursor-pointer rounded-xl font-semibold text-sm  dark:text-slate-900 text-primary bg-white transition-all duration-300
+                    shadow-[4px_4px_10px_rgba(0,0,0,0.2)] hover:shadow-[2px_2px_6px_rgba(0,0,0,0.15)]
+                    active:shadow-[inset_4px_4px_8px_rgba(0,0,0,0.2)]">
+                  Start with your key
+                </button>
+                 </Link>
+              </motion.div>
+            </div>
           </div>
-        </div>
-      </section>
- </main>
+        </section>
+      </main>
     </div>
-   
-  )
+  );
 }
