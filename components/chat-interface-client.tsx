@@ -8,6 +8,10 @@ import { Menu, X, Send, Check, Paperclip, Mic, MessageSquare, Settings, User, Lo
 import ReactMarkdown from "react-markdown";
 import { useSearchParams } from 'next/navigation';
 
+
+
+
+
 interface Message {
   id: string;
   text: string;
