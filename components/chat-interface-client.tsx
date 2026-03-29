@@ -48,65 +48,8 @@ const AnimatedGrid = ({ darkMode }: { darkMode: boolean }) => {
           backgroundSize: 'clamp(40px, 8vw, 100px) clamp(40px, 8vw, 100px)'
         }} />
 
-        {/* Animated Vertical lines */}
-        {gridLines.filter(line => !line.isHorizontal).map((line) => (
-          <motion.div
-            key={`v-${line.id}`}
-            className="absolute top-0 bottom-0"
-            style={{ left: `${line.position}%` }}
-            initial={{ height: 0, top: '50%' }}
-            animate={{ 
-              height: '100%',
-              top: 0,
-            }}
-            transition={{
-              duration: 2,
-              delay: line.delay,
-              repeat: Infinity,
-              repeatDelay: 5,
-              ease: "easeInOut"
-            }}
-          >
-            {/* Outer glow effect - brighter with green-200 */}
-            <div className="absolute inset-0 w-[12px] -translate-x-1/2 bg-gradient-to-b from-transparent via-green-200/90 to-transparent blur-lg" />
-            {/* Middle glow - brighter */}
-            <div className="absolute inset-0 w-[6px] -translate-x-1/2 bg-gradient-to-b from-transparent via-green-200 to-transparent blur-md" />
-            {/* Inner glow - bright */}
-            <div className="absolute inset-0 w-[3px] -translate-x-1/2 bg-gradient-to-b from-transparent via-green-300 to-transparent blur-sm" />
-            {/* Main line - green-500 core */}
-            <div className="absolute inset-0 w-[2px] -translate-x-1/2 bg-gradient-to-b from-transparent via-green-500 to-transparent" />
-          </motion.div>
-        ))}
-
-        {/* Animated Horizontal lines */}
-        {gridLines.filter(line => line.isHorizontal).map((line) => (
-          <motion.div
-            key={`h-${line.id}`}
-            className="absolute left-0 right-0"
-            style={{ top: `${line.position}%` }}
-            initial={{ width: 0, left: '50%' }}
-            animate={{ 
-              width: '100%',
-              left: 0,
-            }}
-            transition={{
-              duration: 2,
-              delay: line.delay,
-              repeat: Infinity,
-              repeatDelay: 5,
-              ease: "easeInOut"
-            }}
-          >
-            {/* Outer glow effect - brighter with green-200 */}
-            <div className="absolute inset-0 h-[12px] -translate-y-1/2 bg-gradient-to-r from-transparent via-green-200/90 to-transparent blur-lg" />
-            {/* Middle glow - brighter */}
-            <div className="absolute inset-0 h-[6px] -translate-y-1/2 bg-gradient-to-r from-transparent via-green-200 to-transparent blur-md" />
-            {/* Inner glow - bright */}
-            <div className="absolute inset-0 h-[3px] -translate-y-1/2 bg-gradient-to-r from-transparent via-green-300 to-transparent blur-sm" />
-            {/* Main line - green-500 core */}
-            <div className="absolute inset-0 h-[2px] -translate-y-1/2 bg-gradient-to-r from-transparent via-green-500 to-transparent" />
-          </motion.div>
-        ))}
+     
+    
       </div>
     </div>
   );

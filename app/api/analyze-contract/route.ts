@@ -319,7 +319,6 @@ Paste a real contract above to get gas estimates and optimization suggestions."
 
 If the input IS valid Solidity, 
 
-analyze it Here is the current live gas data for each chain:
 
 ${chainGasData.map((g) => `- ${g.chainName}: ${g.gasPrice} gwei`).join("\n")}
 
