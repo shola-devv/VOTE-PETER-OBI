@@ -215,10 +215,10 @@ const searchParams = useSearchParams();
           setGasData(data);
         } else {
           setGasData([
-            { chainName: 'Ethereum', gasPrice: 35, tokenSymbol: 'ETH', estimatedGasCost: 5.4 },
-            { chainName: 'Polygon', gasPrice: 33, tokenSymbol: 'MATIC', estimatedGasCost: 1.9 },
-            { chainName: 'Arbitrum', gasPrice: 0.25, tokenSymbol: 'ETH', estimatedGasCost: 0.03 },
-            { chainName: 'Optimism', gasPrice: 0.3, tokenSymbol: 'ETH', estimatedGasCost: 0.04 },
+            { chainName: 'Ethereum', gasPrice: "...", tokenSymbol: 'ETH', estimatedGasCost: 5.4 },
+            { chainName: 'Polygon', gasPrice: "...", tokenSymbol: 'MATIC', estimatedGasCost: 1.9 },
+            { chainName: 'Arbitrum', gasPrice: "...", tokenSymbol: 'ETH', estimatedGasCost: 0.03 },
+            { chainName: 'Optimism', gasPrice: "...", tokenSymbol: 'ETH', estimatedGasCost: 0.04 },
           ]);
         }
       } catch (error) {
@@ -594,11 +594,11 @@ const searchParams = useSearchParams();
             </div>
           </div>
 
-          <div className="border-t border-slate-200 dark:border-slate-700/50 backdrop-blur-sm">
+          <div className=" backdrop-blur-sm">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-                <div className="relative bg-white dark:bg-slate-800/50 rounded-2xl shadow-lg p-3 sm:p-4 md:p-6 transition-all duration-300 border border-slate-200 dark:border-slate-700">
-                  <label className="block text-sm sm:text-base md:text-lg font-medium text-slate-700 dark:text-gray-300 mb-4">
+                <div className="relative  dark:bg-slate-800/50 rounded-2xl shadow-lg p-3 sm:p-4 md:p-6 transition-all duration-300">
+                  <label className="block text-sm sm:text-base md:text-lg font-medium text-slate-700 dark:text-gray-600 mb-4">
                     paste in your smart contract and AI does the magic:
                   </label>
 
@@ -617,14 +617,14 @@ const searchParams = useSearchParams();
                       onChange={(e) => setInputValue(e.target.value)}
                       placeholder="pragma solidity..."
                       rows={1}
-                      className="relative w-full min-h-[100px] max-h-68 pl-4 pr-32 py-3 rounded-2xl
-                        bg-gradient-to-br from-slate-100 via-slate-50 to-green-50 dark:from-green-900/40 dark:via-green-800/30 dark:to-emerald-900/40
-                        backdrop-blur-md resize-none overflow-hidden
-                        text-slate-900 dark:text-white
-                        placeholder-slate-400 dark:placeholder-gray-400
-                        text-sm sm:text-base transition-all duration-300 focus:outline-none
-                        shadow-[8px_8px_18px_rgba(0,0,0,0.1),_-8px_-8px_18px_rgba(255,255,255,0.9)] dark:shadow-[8px_8px_18px_rgba(0,0,0,0.35),_-8px_-8px_18px_rgba(255,255,255,0.15)]
-                        focus:shadow-[inset_6px_6px_14px_rgba(0,0,0,0.15),_inset_-6px_-6px_14px_rgba(255,255,255,0.7)] dark:focus:shadow-[inset_6px_6px_14px_rgba(0,0,0,0.4),_inset_-6px_-6px_14px_rgba(255,255,255,0.15)]"
+                      className={`relative w-full min-h-[100px] max-h-68 pl-4 pr-32 py-3 rounded-2xl
+                        bg-gradient-to-br from-primaryDark/40 via-primary/30 to-primaryLight/40
+                                           backdrop-blur-md resize-none overflow-hidden text-sm sm:text-base
+                                           transition-all duration-300 focus:outline-none
+                                           shadow-[8px_8px_18px_rgba(0,0,0,0.35),_-8px_-8px_18px_rgba(255,255,255,0.15)]
+                                           focus:shadow-[inset_6px_6px_14px_rgba(0,0,0,0.4),_inset_-6px_-6px_14px_rgba(255,255,255,0.15)]
+                                           ${darkMode ? 'text-white placeholder-gray-400' : 'text-surfaceDark placeholder-surfaceShadow'}
+                                          `}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && e.metaKey) {
                           handleSend();
