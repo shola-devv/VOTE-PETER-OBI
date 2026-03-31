@@ -397,28 +397,43 @@ const searchParams = useSearchParams();
                 </div>
               </div>
 
-              {/* ✅ Sidebar Footer with fixed Links */}
-              <div className={`border-t ${darkMode ? 'border-green-900/40' : 'border-gray-200'} p-4 space-y-1`}>
-                <Link href="/profile" onClick={() => setIsSidebarOpen(false)}>
-                  <button className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${darkMode ? 'text-green-200/40 hover:bg-green-950/40 hover:text-green-300' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'}`}>
-                    <User className="w-5 h-5" />
-                    <span>Profile</span>
-                  </button>
-                </Link>
-
-                <Link href="/settings" onClick={() => setIsSidebarOpen(false)}>
-                  <button className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${darkMode ? 'text-green-200/40 hover:bg-green-950/40 hover:text-green-300' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'}`}>
-                    <Settings className="w-5 h-5" />
-                    <span>Settings</span>
-                  </button>
-                </Link>
-
-                <Link href="/" onClick={() => setIsSidebarOpen(false)}>
-                  <button className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${darkMode ? 'text-red-400 hover:bg-red-950/30' : 'text-gray-700 hover:bg-red-50 hover:text-red-600'}`}>
-                    <LogOut className="w-5 h-5" />
-                    <span>Logout</span>
-                  </button>
-                </Link>
+              {/* ✅ Sidebar Footer with account controls */}
+              <div className={`border-t ${darkMode ? 'border-green-900/40' : 'border-gray-200'} p-4 space-y-2`}>
+                {loggedUser ? (
+                  <>
+                    <div className={`text-xs ${darkMode ? 'text-green-200/40' : 'text-gray-500'}`}>
+                      Signed in as <span className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{loggedUser.username}</span>
+                    </div>
+                    <Link href="/profile" onClick={() => setIsSidebarOpen(false)}>
+                      <button className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${darkMode ? 'text-green-200/40 hover:bg-green-950/40 hover:text-green-300' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'}`}>
+                        <User className="w-5 h-5" />
+                        <span>Profile</span>
+                      </button>
+                    </Link>
+                    <Link href="/settings" onClick={() => setIsSidebarOpen(false)}>
+                      <button className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${darkMode ? 'text-green-200/40 hover:bg-green-950/40 hover:text-green-300' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'}`}>
+                        <Settings className="w-5 h-5" />
+                        <span>Settings</span>
+                      </button>
+                    </Link>
+                    <button onClick={() => { handleLogout(); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${darkMode ? 'text-red-400 hover:bg-red-950/30' : 'text-gray-700 hover:bg-red-50 hover:text-red-600'}`}>
+                      <LogOut className="w-5 h-5" />
+                      <span>Sign out</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className={`text-sm mb-2 ${darkMode ? 'text-green-200/40' : 'text-gray-500'}`}>
+                      Sign in to access account shortcuts
+                    </div>
+                    <Link href="/landing/login" onClick={() => setIsSidebarOpen(false)}>
+                      <button className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all">
+                        <User className="w-5 h-5" />
+                        <span>Login</span>
+                      </button>
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>

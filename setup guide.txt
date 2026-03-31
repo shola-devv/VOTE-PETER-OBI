@@ -20,3 +20,6 @@ PASSWORD=olushola12345
 
 
 3. Remember to utilise shadcn library
+
+
+fix the home input box, fix the login issues  
