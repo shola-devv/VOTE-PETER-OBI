@@ -1,8 +1,11 @@
 import OpenAI from "openai";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+export async function callOpenAI(messages: any[], apiKey?: string) {
+  const key = apiKey || process.env.OPENAI_API_KEY;
+  if (!key) throw new Error("OpenAI API key not configured");
 
-export async function callOpenAI(messages: any[]) {
+  const openai = new OpenAI({ apiKey: key });
+
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages,
@@ -12,9 +15,12 @@ export async function callOpenAI(messages: any[]) {
   return response.choices?.[0]?.message?.content;
 }
 
-export async function callGemini(messages: any[]) {
+export async function callGemini(messages: any[], apiKey?: string) {
+  const key = apiKey || process.env.GEMINI_API_KEY;
+  if (!key) throw new Error("Gemini API key not configured");
+
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${process.env.GEMINI_API_KEY}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${key}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },

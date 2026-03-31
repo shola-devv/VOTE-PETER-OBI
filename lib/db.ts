@@ -6,13 +6,12 @@ const MONGO_URI = process.env.MONGO_URI || "";
 mongoose.set('strictQuery', false);
 
 // Connection options
-const options = {
+const baseOptions = {
   bufferCommands: false, // Disable buffering
   maxPoolSize: 10,
   minPoolSize: 2,
-  serverSelectionTimeoutMS: 10000, // Timeout after 10s instead of 30s
+  serverSelectionTimeoutMS: 15000, // Timeout after 15s instead of 30s
   socketTimeoutMS: 45000,
-  family: 4, // Use IPv4, skip trying IPv6
 };
 
 let isConnected = false;
@@ -45,10 +44,14 @@ const connect = async () => {
     
     // Use a configurable DB name for templates. Replace with your DB name
     // or set the `MONGO_DB_NAME` env var when deploying.
-    await mongoose.connect(MONGO_URI!, {
+    const connectOptions = {
       dbName: process.env.MONGO_DB_NAME || "appdb",
-      ...options,
-    });
+      ...baseOptions,
+      // SRV URIs rely on DNS seedlist; avoid forcing family to 4 in that case
+      ...(MONGO_URI.startsWith("mongodb+srv://") ? {} : { family: 4 }),
+    };
+
+    await mongoose.connect(MONGO_URI!, connectOptions);
 
     isConnected = true;
     console.log("✅ MongoDB connected successfully");
@@ -78,8 +81,16 @@ const connect = async () => {
 
     return mongoose.connection;
   } catch (err: any) {
-    console.error("❌ MongoDB connection error:", err);
     isConnected = false;
+    console.error("❌ MongoDB connection error:", err);
+
+    if (err.message?.includes("ECONNREFUSED") || err.message?.includes("querySrv")) {
+      throw new Error(
+        `Failed to connect to MongoDB: ${err.message}. ` +
+        `Check MONGO_URI and DNS resolution for the cluster hostname, and ensure your network allows MongoDB Atlas traffic.`
+      );
+    }
+
     throw new Error(`Failed to connect to MongoDB: ${err.message}`);
   }
 };

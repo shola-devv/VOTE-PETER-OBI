@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Moon, Sun, Eye, EyeOff, Braces, ArrowRight, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 // Static grid background — no animated lines, just the grid mesh + a single soft glow
 const StaticGrid = ({ isDark }: { isDark: boolean }) => (
@@ -50,16 +51,53 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
+  const router = useRouter();
   const isDark = darkMode;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !password.trim()) return;
+    if (!email.trim() || !password.trim()) {
+      setStatusMessage('Fill in email and password');
+      return;
+    }
+
     setIsSubmitting(true);
-    // Simulate async — replace with real auth
-    await new Promise((r) => setTimeout(r, 1800));
-    setIsSubmitting(false);
+    setStatusMessage(null);
+
+    try {
+      const url = mode === 'login' ? '/api/auth/login' : '/api/auth/register';
+      const payload: any = { email: email.trim().toLowerCase(), password };
+      if (mode === 'signup') payload.username = email.split('@')[0] || 'User';
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setStatusMessage(data.message || 'Authentication failed');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Store a lightweight session indicator for client routing/authorization
+      if (data.user) {
+        localStorage.setItem('smartgauge_user', JSON.stringify(data.user));
+        localStorage.setItem('smartgauge_logged_in', 'true');
+      }
+
+      setStatusMessage(data.message || 'Success! Redirecting...');
+      setTimeout(() => router.push('/home'), 500);
+    } catch (err: any) {
+      console.error('Auth error', err);
+      setStatusMessage(err?.message || 'Error during auth');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const switchMode = (next: Mode) => {
@@ -322,6 +360,11 @@ export default function LoginPage() {
                   )}
                 </motion.button>
               </motion.form>
+
+              {statusMessage && (
+                <p className="mt-3 text-center text-sm text-yellow-300">{statusMessage}</p>
+              )}
+
             </AnimatePresence>
 
             {/* Divider

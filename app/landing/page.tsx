@@ -171,7 +171,7 @@ export default function LandingPage() {
               Pricing
             </button>
             <Link href='/landing/login'>
-              <button className={`cursor-pointer inline-block font-medium text-sm sm:text-base transition-colors hover:text-primary ${
+              <button className={`cursor-pointer hidden  md:inline-block font-medium text-sm sm:text-base transition-colors hover:text-primary ${
                 isDark ? 'text-gray-300' : 'text-surfaceDark'
               }`}>
                 Log in

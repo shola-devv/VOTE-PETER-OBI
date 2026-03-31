@@ -7,6 +7,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Send, Check, Paperclip, Mic, MessageSquare, Settings, User, LogOut, Plus, Moon, Sun, Zap, Copy } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useSearchParams } from 'next/navigation';
+import { signIn, signOut } from 'next-auth/react';
+import { estimateComplexity, fetchChainGasData } from "@/lib/coinstats";
 
 
 
@@ -40,21 +42,33 @@ const AnimatedGrid = ({ darkMode }: { darkMode: boolean }) => {
   }, []);
 
   return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-      {/* Grid container */}
-      <div className="absolute inset-0 opacity-50 dark:opacity-60">
-        {/* Static grid squares for responsive sizing */}
-        <div className="absolute inset-0" style={{
+    <div className={`fixed inset-0 pointer-events-none z-0 ${darkMode ? 'bg-[#0a0f0a]' : 'bg-[#f8faf8]'}`}>
+      <div
+        className="absolute inset-0 opacity-40"
+        style={{
           backgroundImage: `
-            linear-gradient(to right, rgba(34, 197, 94, 0.35) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(34, 197, 94, 0.35) 1px, transparent 1px)
+            linear-gradient(to right, rgba(34, 197, 94, 0.3) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(34, 197, 94, 0.3) 1px, transparent 1px)
           `,
-          backgroundSize: 'clamp(40px, 8vw, 100px) clamp(40px, 8vw, 100px)'
-        }} />
-
-     
-    
-      </div>
+          backgroundSize: 'clamp(40px, 8vw, 100px) clamp(40px, 8vw, 100px)',
+        }}
+      />
+      <div
+        className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full"
+        style={{
+          background: darkMode
+            ? 'radial-gradient(circle, rgba(34,197,94,0.12) 0%, transparent 70%)'
+            : 'radial-gradient(circle, rgba(34,197,94,0.08) 0%, transparent 70%)',
+        }}
+      />
+      <div
+        className="absolute -bottom-32 -right-32 w-[400px] h-[400px] rounded-full"
+        style={{
+          background: darkMode
+            ? 'radial-gradient(circle, rgba(74,222,128,0.09) 0%, transparent 70%)'
+            : 'radial-gradient(circle, rgba(74,222,128,0.06) 0%, transparent 70%)',
+        }}
+      />
     </div>
   );
 };
@@ -69,7 +83,32 @@ export default function ChatInterfaceClient() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [gasData, setGasData] = useState<Array<{ chainName: string; gasPrice: number; tokenSymbol: string; estimatedGasCost: number }>>([]);
+  const [loggedUser, setLoggedUser] = useState<{ id: string; email: string; username: string } | null>(null);
 
+  const getApiPayloadMeta = () => {
+    const provider = localStorage.getItem('apiProvider') || 'openai';
+    const apiMode = localStorage.getItem('apiMode') || 'auto';
+    const apiKey = apiMode === 'custom' ? localStorage.getItem(`apiKey_${provider}`) : null;
+    return { provider, apiKey: apiKey ? apiKey : undefined };
+  };
+
+  useEffect(() => {
+    const saved = localStorage.getItem('smartgauge_user');
+    if (saved) {
+      try {
+        setLoggedUser(JSON.parse(saved));
+      } catch {
+        setLoggedUser(null);
+      }
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('smartgauge_user');
+    localStorage.removeItem('smartgauge_logged_in');
+    setLoggedUser(null);
+  };
 
 const searchParams = useSearchParams();
   const hasSentInitial = useRef(false); // ← prevent double send
@@ -104,13 +143,16 @@ const searchParams = useSearchParams();
     setIsTyping(true);
 
     try {
+      const providerPayload = getApiPayloadMeta();
       const res = await fetch("/api/analyze-contract", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contractCode: value }),
+        body: JSON.stringify({ contractCode: value, provider: providerPayload.provider, apiKey: providerPayload.apiKey }),
       });
 
       const data: AnalysisResponse = await res.json();
+
+      const complexity = estimateComplexity(value);
 
       if (!res.ok || !data.success) {
         throw new Error(data.error || "Failed to analyze contract");
@@ -120,7 +162,7 @@ const searchParams = useSearchParams();
         ...prev,
         {
           id: (Date.now() + 1).toString(),
-          text: formatAnalysisResponse(data),
+          text: `${formatAnalysisResponse(data)}\n\n📊 Estimated local complexity: ${complexity}`,
           sender: "ai",
           timestamp: new Date(),
         },
@@ -162,6 +204,34 @@ const searchParams = useSearchParams();
     } else {
       document.documentElement.classList.remove("dark");
     }
+  }, []);
+
+  // Fetch gas data on mount
+  useEffect(() => {
+    const fetchGasData = async () => {
+      try {
+        const data = await fetchChainGasData();
+        if (data && data.length > 0) {
+          setGasData(data);
+        } else {
+          setGasData([
+            { chainName: 'Ethereum', gasPrice: 35, tokenSymbol: 'ETH', estimatedGasCost: 5.4 },
+            { chainName: 'Polygon', gasPrice: 33, tokenSymbol: 'MATIC', estimatedGasCost: 1.9 },
+            { chainName: 'Arbitrum', gasPrice: 0.25, tokenSymbol: 'ETH', estimatedGasCost: 0.03 },
+            { chainName: 'Optimism', gasPrice: 0.3, tokenSymbol: 'ETH', estimatedGasCost: 0.04 },
+          ]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch gas data:', error);
+        setGasData([
+          { chainName: 'Ethereum', gasPrice: 35, tokenSymbol: 'ETH', estimatedGasCost: 5.4 },
+          { chainName: 'Polygon', gasPrice: 33, tokenSymbol: 'MATIC', estimatedGasCost: 1.9 },
+          { chainName: 'Arbitrum', gasPrice: 0.25, tokenSymbol: 'ETH', estimatedGasCost: 0.03 },
+          { chainName: 'Optimism', gasPrice: 0.3, tokenSymbol: 'ETH', estimatedGasCost: 0.04 },
+        ]);
+      }
+    };
+    fetchGasData();
   }, []);
 
   // ✅ Dark mode toggle: saves to localStorage and updates class
@@ -209,10 +279,11 @@ const searchParams = useSearchParams();
     setIsTyping(true);
 
     try {
+      const providerPayload = getApiPayloadMeta();
       const res = await fetch("/api/analyze-contract", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contractCode }),
+        body: JSON.stringify({ contractCode, provider: providerPayload.provider, apiKey: providerPayload.apiKey }),
       });
 
       const data: AnalysisResponse = await res.json();
@@ -246,13 +317,8 @@ const searchParams = useSearchParams();
   };
 
   return (
-<div className={`min-h-screen relative overflow-hidden ${darkMode ? 'dark bg-slate-900' : 'bg-gradient-to-br from-slate-50 via-slate-100 to-slate-50'}`}>
+<div className={`min-h-screen relative overflow-hidden ${darkMode ? 'bg-[#0a0f0a]' : 'bg-[#f8faf8]'}`}>
       <AnimatedGrid darkMode={darkMode} />
-
-      <div className="absolute inset-cdx0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-green-400 dark:bg-green-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-10 animate-blob"></div>
-        <div className="absolute top-40 right-10 w-72 h-72 bg-emerald-400 dark:bg-emerald-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-10 animate-blob animation-delay-2000"></div>
-      </div>
 
       <AnimatePresence>
         {isSidebarOpen && (
@@ -273,26 +339,25 @@ const searchParams = useSearchParams();
             animate={{ x: 0 }}
             exit={{ x: -320 }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed left-0 top-0 h-full w-80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-r border-slate-200 dark:border-slate-700/50 z-50 shadow-2xl"
+            className={`fixed left-0 top-0 h-full w-80 backdrop-blur-xl border-r z-50 shadow-2xl ${darkMode ? 'bg-[#0f1a0f] border-green-900/40' : 'bg-white/95 border-gray-200'}`}
           >
             <div className="flex flex-col h-full">
-              {/* Sidebar Header */}
-              <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700/50">
+              <div className={`flex items-center justify-between p-6 border-b ${darkMode ? 'border-green-900/40' : 'border-gray-200'}`}>
                 <div className="flex items-center gap-3">
                   <img
                     src="/smart gauge.png"
                     alt="Smart Gauge Logo"
                     className="w-10 h-10 object-contain"
                   />
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                  <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                     Smart Gauge
                   </h2>
                 </div>
                 <button
                   onClick={() => setIsSidebarOpen(false)}
-                  className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                  className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-green-950/40 text-green-200/40' : 'hover:bg-gray-100 text-gray-600'}`}
                 >
-                  <X className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
@@ -308,29 +373,24 @@ const searchParams = useSearchParams();
               </div>
 
               {/* Gas Prices */}
-              <div className="flex-1 px-4 py-4 border-t border-slate-200 dark:border-slate-700/50">
+              <div className={`flex-1 px-4 py-4 border-t ${darkMode ? 'border-green-900/40' : 'border-gray-200'}`}>
                 <div className="flex items-center gap-2 mb-3">
                   <Zap className="w-4 h-4 text-yellow-500" />
-                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  <div className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-green-200/40' : 'text-gray-500'}`}>
                     Gas Prices for Chains
                   </div>
                 </div>
                 <div className="space-y-2">
-                  {[
-                    { name: "Ethereum", price: "25.4", color: "text-green-600 dark:text-green-400" },
-                    { name: "Polygon", price: "32.1", color: "text-emerald-600 dark:text-emerald-400" },
-                    { name: "Arbitrum", price: "0.15", color: "text-teal-600 dark:text-teal-400" },
-                    { name: "Optimism", price: "0.21", color: "text-lime-600 dark:text-lime-400" },
-                  ].map((chain) => (
+                  {gasData.map((chain) => (
                     <div
-                      key={chain.name}
-                      className="flex items-center justify-between px-3 py-2 bg-slate-50 dark:bg-slate-800/30 rounded-lg"
+                      key={chain.chainName}
+                      className={`flex items-center justify-between px-3 py-2 rounded-lg ${darkMode ? 'bg-[#0a140a]' : 'bg-gray-50'}`}
                     >
-                      <span className="text-xs font-medium text-slate-700 dark:text-gray-300">
-                        {chain.name}
+                      <span className={`text-xs font-medium ${darkMode ? 'text-green-200/40' : 'text-gray-700'}`}>
+                        {chain.chainName}
                       </span>
-                      <span className={`text-xs font-bold ${chain.color}`}>
-                        {chain.price} GWEI
+                      <span className={`text-xs font-bold ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
+                        {chain.gasPrice.toFixed(2)} GWEI
                       </span>
                     </div>
                   ))}
@@ -338,23 +398,23 @@ const searchParams = useSearchParams();
               </div>
 
               {/* ✅ Sidebar Footer with fixed Links */}
-              <div className="border-t border-slate-200 dark:border-slate-700/50 p-4 space-y-1">
+              <div className={`border-t ${darkMode ? 'border-green-900/40' : 'border-gray-200'} p-4 space-y-1`}>
                 <Link href="/profile" onClick={() => setIsSidebarOpen(false)}>
-                  <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-700 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white">
+                  <button className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${darkMode ? 'text-green-200/40 hover:bg-green-950/40 hover:text-green-300' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'}`}>
                     <User className="w-5 h-5" />
                     <span>Profile</span>
                   </button>
                 </Link>
 
                 <Link href="/settings" onClick={() => setIsSidebarOpen(false)}>
-                  <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-700 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white">
+                  <button className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${darkMode ? 'text-green-200/40 hover:bg-green-950/40 hover:text-green-300' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'}`}>
                     <Settings className="w-5 h-5" />
                     <span>Settings</span>
                   </button>
                 </Link>
 
                 <Link href="/" onClick={() => setIsSidebarOpen(false)}>
-                  <button className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400">
+                  <button className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${darkMode ? 'text-red-400 hover:bg-red-950/30' : 'text-gray-700 hover:bg-red-50 hover:text-red-600'}`}>
                     <LogOut className="w-5 h-5" />
                     <span>Logout</span>
                   </button>
@@ -367,19 +427,19 @@ const searchParams = useSearchParams();
 
       {/* Main Content */}
       <div className="relative z-10 flex flex-col h-screen">
-        <header className="border-b border-slate-200 dark:border-slate-700/50 backdrop-blur-sm">
+        <header className={`backdrop-blur-sm ${darkMode ? 'bg-[#0a0f0a]/90 border-b border-green-900/30' : 'bg-[#f8faf8]/90 border-b border-gray-200/60'}`}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsSidebarOpen(true)}
-                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-green-950/40 text-green-200/40' : 'hover:bg-gray-100 text-gray-600'}`}
               >
-                <Menu className="w-6 h-6 text-slate-900 dark:text-white" />
+                <Menu className="w-6 h-6" />
               </button>
 
               <button
                 onClick={toggleDarkMode}
-                className="p-2 rounded-lg text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-green-950/40 text-green-400' : 'hover:bg-gray-100 text-gray-600'}`}
                 aria-label="Toggle dark mode"
               >
                 {darkMode ? (
@@ -396,7 +456,7 @@ const searchParams = useSearchParams();
                 alt="Smart Gauge Logo"
                 className="w-8 h-8 object-contain"
               />
-              <h1 className="text-xl font-bold text-slate-900 dark:text-white hidden sm:block">
+              <h1 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                 Smart Gauge
               </h1>
             </div>
@@ -418,10 +478,10 @@ const searchParams = useSearchParams();
             <div className="max-w-4xl mx-auto space-y-6">
               {messages.length === 0 ? (
                 <div className="text-center py-12">
-                  <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
+                  <h2 className={`text-3xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                     Welcome to Smart Gauge
                   </h2>
-                  <p className="text-slate-600 dark:text-gray-400 text-lg">
+                  <p className={`text-lg ${darkMode ? 'text-green-200/40' : 'text-gray-400'}`}>
                     Paste in your solidity smart contract and let AI do the magic
                   </p>
                 </div>
@@ -437,11 +497,7 @@ const searchParams = useSearchParams();
                   >
                     <div className="relative group max-w-[80%] min-w-0 overflow-hidden">
                       <div
-                        className={`rounded-2xl px-6 py-4 ${
-                          message.sender === "user"
-                            ? "bg-gradient-to-br from-green-600 to-emerald-600 text-white"
-                            : "bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-gray-200"
-                        }`}
+                        className={`rounded-2xl px-6 py-4 ${message.sender === "user" ? "bg-gradient-to-br from-green-600 to-emerald-600 text-white" : `${darkMode ? 'bg-[#0f1a0f] border border-green-900/40 text-green-200' : 'bg-white border border-gray-200 text-gray-900'}`}`}
                       >
                         <div className="text-sm sm:text-base prose prose-sm dark:prose-invert max-w-none
   prose-headings:font-bold prose-headings:mb-2
@@ -460,7 +516,7 @@ const searchParams = useSearchParams();
                           className={`text-xs mt-2 ${
                             message.sender === "user"
                               ? "text-green-100"
-                              : "text-slate-500 dark:text-gray-500"
+                              : darkMode ? "text-green-900" : "text-gray-400"
                           }`}
                         >
                           {message.timestamp.toLocaleTimeString([], {
@@ -483,7 +539,7 @@ const searchParams = useSearchParams();
                         ${
                           message.sender === "user"
                             ? "bg-green-700 text-green-100 hover:bg-green-800"
-                            : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
+                            : darkMode ? "bg-[#0f1a0f] border border-green-900/40 text-green-200/40 hover:bg-green-950/40" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                         }`}
                       >
                         {copiedId === message.id ? (
@@ -509,11 +565,11 @@ const searchParams = useSearchParams();
                   animate={{ opacity: 1, y: 0 }}
                   className="flex justify-start"
                 >
-                  <div className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-6 py-4">
+                  <div className={`rounded-2xl px-6 py-4 border ${darkMode ? 'bg-[#0a140a] border-green-900/40 text-green-300' : 'bg-white border-gray-200 text-gray-800'}`}>
                     <div className="flex gap-2">
-                      <div className="w-2 h-2 bg-slate-500 dark:bg-gray-500 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-slate-500 dark:bg-gray-500 rounded-full animate-bounce animation-delay-200"></div>
-                      <div className="w-2 h-2 bg-slate-500 dark:bg-gray-500 rounded-full animate-bounce animation-delay-400"></div>
+                      <div className={`${darkMode ? 'bg-green-400' : 'bg-slate-500'} w-2 h-2 rounded-full animate-bounce`}></div>
+                      <div className={`${darkMode ? 'bg-green-400' : 'bg-slate-500'} w-2 h-2 rounded-full animate-bounce animation-delay-200`}></div>
+                      <div className={`${darkMode ? 'bg-green-400' : 'bg-slate-500'} w-2 h-2 rounded-full animate-bounce animation-delay-400`}></div>
                     </div>
                   </div>
                 </motion.div>
@@ -583,9 +639,9 @@ const searchParams = useSearchParams();
                           disabled
                           onMouseEnter={() => setShowTooltip("mic")}
                           onMouseLeave={() => setShowTooltip(null)}
-                          className="p-2 rounded-full bg-slate-200 dark:bg-slate-700/50 opacity-50 cursor-not-allowed"
+                          className={`p-2 rounded-full ${darkMode ? 'bg-green-950/40' : 'bg-slate-200'} opacity-50 cursor-not-allowed`}
                         >
-                          <Mic className="w-4 h-4 sm:w-5 sm:h-5 text-slate-500 dark:text-gray-400" />
+                          <Mic className={`w-4 h-4 sm:w-5 sm:h-5 ${darkMode ? 'text-green-200/40' : 'text-slate-500'}`} />
                         </button>
                         {showTooltip === "mic" && (
                           <div className="absolute bottom-12 right-0 bg-slate-900 dark:bg-black text-white text-xs px-3 py-1.5 rounded-md shadow-lg whitespace-nowrap">
@@ -599,11 +655,7 @@ const searchParams = useSearchParams();
                         whileHover={{ scale: inputValue.trim() ? 1.07 : 1 }}
                         whileTap={{ scale: inputValue.trim() ? 0.95 : 1 }}
                         disabled={!inputValue.trim()}
-                        className={`relative p-2 rounded-full bg-slate-900 dark:bg-slate-900 transition-all duration-300
-                          ${inputValue.trim()
-                            ? "ring-2 ring-green-400/60 shadow-[0_0_20px_rgba(34,197,94,0.6)]"
-                            : "opacity-50 cursor-not-allowed"
-                          }`}
+                        className={`relative p-2 rounded-full transition-all duration-300 ${inputValue.trim() ? 'bg-gradient-to-r from-green-600 to-emerald-600 ring-2 ring-green-400/60 shadow-[0_0_20px_rgba(34,197,94,0.6)]' : 'bg-slate-400 dark:bg-green-950/30 opacity-50 cursor-not-allowed'}`}
                       >
                         <Send className="w-4 cursor-pointer h-4 sm:w-5 sm:h-5 text-white" />
                       </motion.button>
