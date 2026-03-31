@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   // ---------------------------
   const ip =
     req.headers.get('x-forwarded-for')?.split(',')[0] ||
-    req.ip ||
+    req.headers.get('x-real-ip') ||
     'unknown'
 
   // ---------------------------

@@ -29,3 +29,4 @@ export const ratelimit = makeRatelimit({ size: 20, window: "30 s" }); // default
 export const strictRatelimit = makeRatelimit({ size: 5, window: "60 s" });
 export const mediumRatelimit = makeRatelimit({ size: 20, window: "30 s" });
 export const burstRatelimit = makeRatelimit({ size: 50, window: "300 s" });
+export const freeContractRateLimit = makeRatelimit({ size: 10, window: "24 h" });

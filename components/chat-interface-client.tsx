@@ -215,10 +215,10 @@ const searchParams = useSearchParams();
           setGasData(data);
         } else {
           setGasData([
-            { chainName: 'Ethereum', gasPrice: "...", tokenSymbol: 'ETH', estimatedGasCost: 5.4 },
-            { chainName: 'Polygon', gasPrice: "...", tokenSymbol: 'MATIC', estimatedGasCost: 1.9 },
-            { chainName: 'Arbitrum', gasPrice: "...", tokenSymbol: 'ETH', estimatedGasCost: 0.03 },
-            { chainName: 'Optimism', gasPrice: "...", tokenSymbol: 'ETH', estimatedGasCost: 0.04 },
+            { chainName: 'Ethereum', gasPrice: 0, tokenSymbol: 'ETH', estimatedGasCost: 0 },
+            { chainName: 'Polygon', gasPrice: 0, tokenSymbol: 'MATIC', estimatedGasCost: 0 },
+            { chainName: 'Arbitrum', gasPrice: 0, tokenSymbol: 'ETH', estimatedGasCost: 0 },
+            { chainName: 'Optimism', gasPrice: 0, tokenSymbol: 'ETH', estimatedGasCost: 0 },
           ]);
         }
       } catch (error) {

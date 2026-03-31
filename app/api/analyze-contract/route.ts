@@ -238,9 +238,11 @@ Focus on:
 
 
 import { NextRequest, NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
 import Groq from "groq-sdk";
 import { estimateComplexity, fetchChainGasData } from "@/lib/coinstats";
 import { callOpenAI, callGemini } from "@/lib/providers";
+import { freeContractRateLimit, mediumRatelimit, burstRatelimit } from "@/lib/rate-limit";
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -275,6 +277,43 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         { success: false, error: 'Contract code is required' },
         { status: 400 }
       );
+    }
+
+    // ---------------------------
+    // Rate limiting: free path is 10 requests per 24h for no apiKey
+    // ---------------------------
+    const ip =
+      request.headers.get('x-forwarded-for')?.split(',')[0] ||
+      request.headers.get('x-real-ip') ||
+      'unknown';
+    const authToken = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    const userId = authToken?.id as string | undefined;
+
+    if (!apiKey) {
+      const limitResult = await freeContractRateLimit.limit(
+        `verify-contract-free:${userId ?? ip}`
+      );
+      if (!limitResult.success) {
+        return new NextResponse(JSON.stringify({ error: 'Free plan rate limit reached. Try again in 24h.' }), {
+          status: 429,
+          headers: {
+            'Retry-After': '86400',
+            'Content-Type': 'application/json',
+          },
+        });
+      }
+    } else {
+      // user provided own API key -> higher request capacity
+      const limitResult = await mediumRatelimit.limit(`verify-contract-key:${userId ?? ip}`);
+      if (!limitResult.success) {
+        return new NextResponse(JSON.stringify({ error: 'Rate limit exceeded. Try again later.' }), {
+          status: 429,
+          headers: {
+            'Retry-After': '60',
+            'Content-Type': 'application/json',
+          },
+        });
+      }
     }
 
     // Run complexity + gas fetch in parallel

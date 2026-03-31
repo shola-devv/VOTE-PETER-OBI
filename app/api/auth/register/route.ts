@@ -32,7 +32,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      message: "User created",
+      message: "account created",
       user: {
         id: newUser._id.toString(),
         email: newUser.email,
