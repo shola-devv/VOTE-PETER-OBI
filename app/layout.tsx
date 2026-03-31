@@ -1,9 +1,12 @@
 
+'use client'
+
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import Script from "next/script";
 import { inter } from "./fonts";
+import { SessionProvider } from 'next-auth/react';
 
 
 const geistSans = localFont({
@@ -20,36 +23,6 @@ const geistMono = localFont({
 
 
 
-
-export const metadata: Metadata = {
-  title: "smart gauge",
-  description: "Track your crypto portfolio and holdings with ease",
-  
-
-  openGraph: {
-     title: "Cryptosnoop",
-     description: "track your crypto assets and holdings with ease",
-     url: "https://cryptosnoop.app",
-     siteName: "cryptosnoop",
-     images: [
-      {
-        url: "/cryptosnoopwall.jpg",
-        width: 1200,
-        height: 630,
-        alt: "cryptosnoop preview"
-      },
-     ],
-     type: "website",
-  },
-   twitter: {
-    card: "summary_large_image",
-    title: "cryptosnoop",
-    description: "track your crypto assets and holdings with ease",
-    images: ["/cryptosnoopwall.jpg"],
-   },
-
-
-};
 
 export const viewport = {
   themeColor: "#d575fc",
@@ -119,7 +92,9 @@ export default function RootLayout({
           `}
         </Script>
 
-        {children}
+        <SessionProvider>
+          {children}
+        </SessionProvider>
       </body>
     </html>
   );

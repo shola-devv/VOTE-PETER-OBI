@@ -250,7 +250,7 @@ interface AnalysisRequest {
   contractCode: string;
 }
 
-interface AnalysisResponse {
+export interface AnalysisResponse {
   success: boolean;
   contractCode: string;
   gasEstimates: Array<{
@@ -263,6 +263,7 @@ interface AnalysisResponse {
   optimizationSuggestions: string;
   complexity: string;
   error?: string;
+  remainingFreeRequests?: number;
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -289,12 +290,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const authToken = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
     const userId = authToken?.id as string | undefined;
 
+    let remainingFreeRequests: number | undefined = undefined;
+
     if (!apiKey) {
       const limitResult = await freeContractRateLimit.limit(
         `verify-contract-free:${userId ?? ip}`
       );
       if (!limitResult.success) {
-        return new NextResponse(JSON.stringify({ error: 'Free plan rate limit reached. Try again in 24h.' }), {
+        return new NextResponse(JSON.stringify({ error: 'Free plan limit reached. Add your API key for unlimited use.' }), {
           status: 429,
           headers: {
             'Retry-After': '86400',
@@ -302,6 +305,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           },
         });
       }
+      remainingFreeRequests = limitResult.remaining;
     } else {
       // user provided own API key -> higher request capacity
       const limitResult = await mediumRatelimit.limit(`verify-contract-key:${userId ?? ip}`);
@@ -413,6 +417,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       gasEstimates: chainGasData,
       optimizationSuggestions,
       complexity,
+      remainingFreeRequests,
     } as AnalysisResponse);
   } catch (error) {
     console.error('❌ Error analyzing contract:', error);

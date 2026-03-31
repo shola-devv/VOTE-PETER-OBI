@@ -9,6 +9,7 @@ import ReactMarkdown from "react-markdown";
 import { useSearchParams } from 'next/navigation';
 import { signIn, signOut } from 'next-auth/react';
 import { estimateComplexity, fetchChainGasData } from "@/lib/coinstats";
+import { AnalysisResponse } from '@/types/analysis';
 
 
 

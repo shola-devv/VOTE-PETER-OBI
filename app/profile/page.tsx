@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Moon, Sun, Key, LogOut, Trash2, ChevronRight, AlertTriangle, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 
 // Same static grid as login page — no animated lines
 const StaticGrid = ({ isDark }: { isDark: boolean }) => (
@@ -126,12 +127,13 @@ const DeleteModal = ({
 
 export default function ProfilePage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [darkMode, setDarkMode] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const username = 'john_dev';
-  const email = 'john@example.com';
-  const joinedDate = 'March 2025';
+  const username = session?.user?.name || 'User';
+  const email = session?.user?.email || 'user@example.com';
+  const joinedDate = 'March 2025'; // You can fetch from DB if available
   const initials = username.slice(0, 2).toUpperCase();
   const [hasApiKey, setHasApiKey] = useState(false);
   

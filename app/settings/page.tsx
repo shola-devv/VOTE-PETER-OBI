@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Moon, Sun, Key, User, LogOut, ChevronDown, Check, Eye, EyeOff, Save, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 const StaticGrid = ({ isDark }: { isDark: boolean }) => (
   <div className={`fixed inset-0 pointer-events-none z-0 ${isDark ? 'bg-[#0a0f0a]' : 'bg-[#f8faf8]'}`}>
@@ -49,15 +50,20 @@ interface Toast { message: string; type: ToastType; }
 
 function SettingsContent() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [darkMode, setDarkMode]   = useState(true);
   const [selectedProvider, setSelectedProvider] = useState(AI_PROVIDERS[0]);
   const [apiMode, setApiMode] = useState<'auto'|'custom'>('auto');
   const [hasCustomKey, setHasCustomKey] = useState(false);
   const [providerDropdownOpen, setProviderDropdownOpen] = useState(false);
   const [apiKey, setApiKey]       = useState('');
+  const [username, setUsername]   = useState('');
+  const [email, setEmail] = useState('');
+  const [usernameSaved, setUsernameSaved] = useState(false);
+  const [toast, setToast]         = useState<Toast | null>(null);
   const [showKey, setShowKey]     = useState(false);
   const [apiKeySaved, setApiKeySaved] = useState(false);
-  const [username, setUsername]   = useState('john_dev');
+  const [username, setUsername]   = useState(session?.user?.name || 'User');
   const [usernameSaved, setUsernameSaved] = useState(false);
   const [toast, setToast]         = useState<Toast | null>(null);
 
@@ -79,6 +85,13 @@ function SettingsContent() {
     setApiKey(savedKey);
     setHasCustomKey(!!savedKey);
   }, []);
+
+  useEffect(() => {
+    if (session?.user) {
+      setUsername(session.user.name || 'User');
+      setEmail(session.user.email || '');
+    }
+  }, [session]);
 
   const toggleDarkMode = () => {
     setDarkMode(prev => {
@@ -127,7 +140,7 @@ function SettingsContent() {
   const saveBtn      = `flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-green-700 via-green-500 to-green-400 shadow-[0_4px_20px_rgba(34,197,94,0.35)] hover:opacity-90 active:scale-95 transition-all duration-150`;
 
   return (
-    <div className={`min-h-screen overflow-y-auto ${isDark ? 'bg-[#0a0f0a]' : 'bg-[#f8faf8]'} ${textPrimary}`}>
+    <div className={`h-screen overflow-y-auto ${isDark ? 'bg-[#0a0f0a]' : 'bg-[#f8faf8]'} ${textPrimary}`}>
       <StaticGrid isDark={isDark} />
 
       {/* Toast */}
@@ -339,8 +352,9 @@ function SettingsContent() {
 
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className={`text-sm ${textMuted}`}>
-                Signed in as <span className={`font-semibold ${textPrimary}`}>@{username}</span>
+                Signed in as <span className={`font-semibold ${textPrimary}`}>{session?.user?.name || username || 'Guest'}</span>
               </p>
+              <p className={`text-sm ${textMuted}`}>{session?.user?.email || email || 'No email available'}</p>
               <button
                 onClick={() => router.push('/')}
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold border transition-all duration-200 text-red-500 ${
@@ -367,5 +381,4 @@ function SettingsContent() {
   );
 }
 
-// ssr: false equivalent — wrap with dynamic so Next.js never SSR's this
-export default dynamic(() => Promise.resolve(SettingsContent), { ssr: false });
+// ssr: f

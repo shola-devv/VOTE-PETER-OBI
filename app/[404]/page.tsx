@@ -1,106 +1,68 @@
 'use client'
 
 import Image from 'next/image'
-import { signOut } from "next-auth/react";
+import { useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
+import { Home, ArrowLeft, Code, Zap } from 'lucide-react'
 
+export default function NotFound() {
+  const router = useRouter()
 
-export default function notFound() {
-
-
-    return (
-<main className="min-h-screen bg-gradient-to-b from-purple-50 to-purple-100 dark:from-slate-900 dark:to-slate-800">
-  <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10">
-    <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-      <div className="flex items-center gap-2 sm:gap-4">
-        <div className="flex items-center gap-2">
-          <Image
-            src="/cryptosnooplogo1.png"
-            alt="DIVAFlex Logo"
-            width={48}
-            height={32}
-            className="object-contain"
-            priority
-          />
-          <div className="flex flex-col leading-none">
-            <span
-              className="font-bold text-sm sm:text-lg leading-tight"
-              style={{ color: '#c750f7' }}
-            >
-              crypto
-            </span>
-            <span className="text-slate-700 dark:text-slate-300 font-bold text-sm sm:text-lg leading-tight -mt-1">
-              Snoop
-            </span>
+  return (
+    <main className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center px-4">
+      <div className="text-center">
+        {/* Logo */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mb-8"
+        >
+          <div className="mx-auto mb-4 flex items-center justify-center w-20 h-20 bg-blue-600 rounded-full">
+            <Zap className="w-10 h-10 text-white" />
           </div>
-        </div>
-      </div>
-    </div>
-  </header>
+          <h1 className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2">
+            404
+          </h1>
+          <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
+            Smart Contract Not Found
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+            Oops! The smart contract page you're looking for doesn't exist. It might have been moved, deleted, or you entered the wrong URL. Let's get you back to analyzing contracts!
+          </p>
+        </motion.div>
 
-  {/* Spinner centered horizontally with top spacing */}
-  <div className="flex justify-center mt-20 sm:mt-24 lg:mt-28">
-    
-            <Image
-            src="/cryptosnooplogo1.png"
-            alt="DIVAFlex Logo"
-            width={64}
-            height={48}
-            className="object-contain animate-bounce"
-            priority
-            ></Image>
-           
-
-  </div>
-   <div className="flex justify-center mt-8 sm:mt-8 lg:mt-12 font-bold">
-    
-          <p>404 | page not found </p>
-  </div>
-  
-  {/* Footer pushed down so only ~1/8 of it is visible */}
-  <footer className="mt-[60vh] bg-white text-gray-900 py-12 relative z-10">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <div className="flex items-center justify-center gap-6 mb-6">
-        <a
-          href="/home/privacy"
-          className="text-gray-600 hover:text-[#c750f7] transition-colors duration-300 font-medium underline"
+        {/* Buttons */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="flex flex-col sm:flex-row gap-4 justify-center"
         >
-          privacy policy
-        </a>
-        <a
-          href="/home/help"
-          className="text-gray-600 hover:text-[#c750f7] transition-colors duration-300 font-medium underline"
-        >
-          Help
-        </a>
-        <a href={`https://twitter.com/intent/follow?screen_name=${`cryptosnoop_app`}`} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-[#c750f7] transition-colors duration-300 font-medium underline" >our socials</a>
-        <a
-          onClick={() => signOut({ callbackUrl: "/auth/signin" })}
-          className="text-gray-600 hover:text-[#c750f7] transition-colors duration-300 font-medium underline"
-        >
-          Logout
-        </a>
+          <button
+            onClick={() => router.back()}
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Go Back
+          </button>
+          <button
+            onClick={() => router.push('/home')}
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Home className="w-4 h-4" />
+            Home
+          </button>
+          <button
+            onClick={() => router.push('/home')}
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            <Code className="w-4 h-4" />
+            Analyze Contracts
+          </button>
+        </motion.div>
       </div>
-      <div className="flex items-center justify-center gap-3 mb-4">
-        <div className="w-12 h-12 flex items-center justify-center">
-          <Image
-            src="/cryptosnooplogo1.png"
-            alt="DIVAFlex Logo"
-            width={48}
-            height={32}
-            className="object-contain"
-            priority
-          />
-        </div>
-        <h4 className="text-xl font-bold">CryptoSnoop.app</h4>
-      </div>
-      <p className="text-slate-600 dark:text-slate-400 mb-2">
-        Track your crypto journey with confidence
-      </p>
-      <p className="text-gray-600">© {new Date().getFullYear()} CryptoSnoop. All rights reserved.</p>
-    </div>
-  </footer>
-</main>
-    )
-
-
+    </main>
+  )
 }
+           
