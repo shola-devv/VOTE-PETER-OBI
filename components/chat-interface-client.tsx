@@ -550,7 +550,7 @@ const searchParams = useSearchParams();
                         }}
                         className={`absolute -bottom-3 ${
                           message.sender === "user" ? "right-2" : "left-2"
-                        } opacity-0 group-hover:opacity-100 transition-all duration-200
+                        } opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200
                         flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium shadow-md
                         ${
                           message.sender === "user"

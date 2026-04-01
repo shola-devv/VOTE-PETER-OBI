@@ -17,6 +17,13 @@ const UserSchema = new Schema(
     },
     
     image: { type: String, required: false, default: null },
+    apiKey: { type: String, required: false, default: null },
+    apiProvider: { 
+      type: String, 
+      enum: ['openai', 'gemini', 'groq'], 
+      required: false, 
+      default: null 
+    },
     subscription: {
       id: { type: String, default: "" },
       status: { type: String, default: "free" },

@@ -1,14 +1,10 @@
-/*
-
-import { NextRequest, NextResponse } from "next/server"
-
-
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/nextAuthOptions";
 import { OpenAI } from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import Groq from "groq-sdk";
 import { estimateComplexity, fetchChainGasData } from "@/lib/coinstats";
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 interface AnalysisRequest {
   contractCode: string;
@@ -29,17 +25,115 @@ interface AnalysisResponse {
   error?: string;
 }
 
+async function analyzeWithOpenAI(contractCode: string, apiKey: string): Promise<string> {
+  const openai = new OpenAI({ apiKey });
+
+  const systemPrompt = `You are an expert smart contract auditor and gas optimization specialist.
+Analyze the provided Solidity smart contract code and provide:
+1. An estimate of the contract's gas costs based on the chain data given
+2. Specific optimization recommendations to reduce gas costs
+3. Security considerations
+4. An overall complexity assessment (Low, Medium, High) based on the code structure and patterns used.
+Keep your response concise but detailed, focusing on actionable improvements.`;
+
+  const userPrompt = `Please analyze this smart contract and provide optimization suggestions:
+
+\`\`\`solidity
+${contractCode}
+\`\`\`
+
+Focus on:
+- Gas optimization opportunities
+- Storage patterns that could be more efficient
+- Function call patterns that consume unnecessary gas
+- Loop optimizations
+- State variable packing opportunities`;
+
+  const completion = await openai.chat.completions.create({
+    model: "gpt-3.5-turbo",
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt },
+    ],
+    max_tokens: 1500,
+    temperature: 0.7,
+  });
+
+  return completion.choices[0]?.message?.content || "Unable to generate optimization suggestions";
+}
+
+async function analyzeWithGemini(contractCode: string, apiKey: string): Promise<string> {
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+  const prompt = `You are an expert smart contract auditor and gas optimization specialist.
+Analyze the provided Solidity smart contract code and provide:
+1. An estimate of the contract's gas costs based on the chain data given
+2. Specific optimization recommendations to reduce gas costs
+3. Security considerations
+4. An overall complexity assessment (Low, Medium, High) based on the code structure and patterns used.
+Keep your response concise but detailed, focusing on actionable improvements.
+
+Please analyze this smart contract and provide optimization suggestions:
+
+\`\`\`solidity
+${contractCode}
+\`\`\`
+
+Focus on:
+- Gas optimization opportunities
+- Storage patterns that could be more efficient
+- Function call patterns that consume unnecessary gas
+- Loop optimizations
+- State variable packing opportunities`;
+
+  const result = await model.generateContent(prompt);
+  return result.response.text() || "Unable to generate optimization suggestions";
+}
+
+async function analyzeWithGroq(contractCode: string): Promise<string> {
+  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY! });
+
+  const systemPrompt = `You are an expert smart contract auditor and gas optimization specialist.
+Analyze the provided Solidity smart contract code and provide:
+1. An estimate of the contract's gas costs based on the chain data given
+2. Specific optimization recommendations to reduce gas costs
+3. Security considerations
+4. An overall complexity assessment (Low, Medium, High) based on the code structure and patterns used.
+Keep your response concise but detailed, focusing on actionable improvements.`;
+
+  const userPrompt = `Please analyze this smart contract and provide optimization suggestions:
+
+\`\`\`solidity
+${contractCode}
+\`\`\`
+
+Focus on:
+- Gas optimization opportunities
+- Storage patterns that could be more efficient
+- Function call patterns that consume unnecessary gas
+- Loop optimizations
+- State variable packing opportunities`;
+
+  const completion = await groq.chat.completions.create({
+    model: "mixtral-8x7b-32768",
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt },
+    ],
+    max_tokens: 1500,
+    temperature: 0.7,
+  });
+
+  return completion.choices[0]?.message?.content || "Unable to generate optimization suggestions";
+}
+
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-   
-     const body: AnalysisRequest = await request.json();
-     console.log("BODY KEYS:", Object.keys(body));
-console.log("contractCode value:", body.contractCode);
-console.log("contractCode type:", typeof body.contractCode);
+    const session = await getServerSession(authOptions as any);
 
-
+    const body: AnalysisRequest = await request.json();
     const { contractCode } = body;
-    console.log("CONTRACT CODE LENGTH:", contractCode?.length);
 
     if (!contractCode || contractCode.trim().length === 0) {
       return NextResponse.json(
@@ -48,10 +142,20 @@ console.log("contractCode type:", typeof body.contractCode);
       );
     }
 
-    if (!process.env.OPENAI_API_KEY) {
+    // Determine which API to use
+    let apiProvider: 'openai' | 'gemini' | 'groq' = 'groq';
+    let apiKey: string | undefined;
+
+    if (session?.user?.apiKey && session.user.apiProvider) {
+      apiProvider = session.user.apiProvider as 'openai' | 'gemini' | 'groq';
+      apiKey = session.user.apiKey;
+    }
+
+    // Validate API key for user-provided keys
+    if (apiProvider !== 'groq' && !apiKey) {
       return NextResponse.json(
-        { success: false, error: "OpenAI API key not configured" },
-        { status: 500 }
+        { success: false, error: "API key not configured for selected provider" },
+        { status: 400 }
       );
     }
 
@@ -66,43 +170,37 @@ console.log("contractCode type:", typeof body.contractCode);
 
     console.log("✅ Complexity:", complexity);
     console.log("✅ Gas chains returned:", chainGasData.length);
+    console.log("✅ Using API provider:", apiProvider);
 
-    const systemPrompt = `You are an expert smart contract auditor and gas optimization specialist.
-Analyze the provided Solidity smart contract code and provide:
-1. An estimate of the contract's gas costs based on the chain data given
-2. Specific optimization recommendations to reduce gas costs
-3. Security considerations
-4. An overall complexity assessment (Low, Medium, High) based on the code structure and patterns used.
-Keep your response concise but detailed, focusing on actionable improvements.`;
+    let optimizationSuggestions: string;
 
-    const userPrompt = `Please analyze this smart contract and provide optimization suggestions:
+    try {
+      if (apiProvider === 'openai' && apiKey) {
+        optimizationSuggestions = await analyzeWithOpenAI(contractCode, apiKey);
+      } else if (apiProvider === 'gemini' && apiKey) {
+        optimizationSuggestions = await analyzeWithGemini(contractCode, apiKey);
+      } else {
+        // Default to Groq
+        if (!process.env.GROQ_API_KEY) {
+          return NextResponse.json(
+            { success: false, error: "Groq API key not configured" },
+            { status: 500 }
+          );
+        }
+        optimizationSuggestions = await analyzeWithGroq(contractCode);
+      }
+    } catch (apiError) {
+      console.error("❌ API call failed:", apiError);
+      // Fallback to Groq if user API fails
+      if (apiProvider !== 'groq' && process.env.GROQ_API_KEY) {
+        console.log("🔄 Falling back to Groq");
+        optimizationSuggestions = await analyzeWithGroq(contractCode);
+      } else {
+        throw apiError;
+      }
+    }
 
-\`\`\`solidity
-${contractCode}
-\`\`\`
-
-Focus on:
-- Gas optimization opportunities
-- Storage patterns that could be more efficient
-- Function call patterns that consume unnecessary gas
-- Loop optimizations
-- State variable packing opportunities`;
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-      max_tokens: 1500,
-      temperature: 0.7,
-    });
-
-    const optimizationSuggestions =
-      completion.choices[0]?.message?.content ||
-      "Unable to generate optimization suggestions";
-
-    console.log("✅ OpenAI response received");
+    console.log("✅ Analysis response received");
 
     return NextResponse.json({
       success: true,
@@ -120,38 +218,6 @@ Focus on:
       { status: 500 }
     );
   }
-}
-
-
-
-
-////GEMINI CALLS
-
-
-
-import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { estimateComplexity, fetchChainGasData } from "@/lib/coinstats";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-
-interface AnalysisRequest {
-  contractCode: string;
-}
-
-interface AnalysisResponse {
-  success: boolean;
-  contractCode: string;
-  gasEstimates: Array<{
-    chainId: string;
-    chainName: string;
-    gasPrice: number;
-    estimatedGasCost: number;
-    tokenSymbol: string;
-  }>;
-  optimizationSuggestions: string;
-  complexity: string;
-  error?: string;
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {

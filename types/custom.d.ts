@@ -9,6 +9,8 @@ declare module 'next-auth' {
       email?: string | null;
       image?: string | null;
       profile?: number | null;
+      apiKey?: string | null;
+      apiProvider?: 'openai' | 'gemini' | 'groq' | null;
     };
   }
 }

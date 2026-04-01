@@ -93,6 +93,8 @@ async function createUserInDB(email: string, username: string, provider: string,
           username: user.username,
           profile: user.profile,
           image: user.image,
+          apiKey: user.apiKey,
+          apiProvider: user.apiProvider,
         },
         message: "User already exists"
       };
@@ -125,6 +127,8 @@ async function createUserInDB(email: string, username: string, provider: string,
         username: user.username,
         profile: user.profile,
         image: user.image,
+        apiKey: user.apiKey,
+        apiProvider: user.apiProvider,
       },
       message: "User created successfully",
     };
@@ -210,6 +214,9 @@ export const authOptions = {
               email: userResult.user.email,
               name: userResult.user.username,
               image: userResult.user.image || null,
+              profile: userResult.user.profile,
+              apiKey: userResult.user.apiKey,
+              apiProvider: userResult.user.apiProvider,
             };
           } else {
             throw new Error("Failed to create user");
@@ -247,6 +254,9 @@ export const authOptions = {
           // Store MongoDB ID in the user object so jwt callback can access it
           if (userResult.success && userResult.user) {
             user.id = userResult.user.id; // MongoDB _id
+            (user as any).profile = userResult.user.profile;
+            (user as any).apiKey = userResult.user.apiKey;
+            (user as any).apiProvider = userResult.user.apiProvider;
           }
         } catch (error) {
           console.error('Error creating Google user:', error);
@@ -263,6 +273,8 @@ export const authOptions = {
         token.name = user.name;
         token.picture = user.image;
         token.profile = (user as any).profile;
+        token.apiKey = (user as any).apiKey;
+        token.apiProvider = (user as any).apiProvider;
       }
       return token;
     },
@@ -273,8 +285,8 @@ export const authOptions = {
         session.user.email = token.email as string;
         session.user.name = token.name as string;
         session.user.image = token.picture as string;
-         (session.user as any).profile = ((token as any).profile as number | null | undefined);
-      }
+         (session.user as any).profile = ((token as any).profile as number | null | undefined);         (session.user as any).apiKey = (token as any).apiKey;
+         (session.user as any).apiProvider = (token as any).apiProvider;      }
       return session;
     },
   },

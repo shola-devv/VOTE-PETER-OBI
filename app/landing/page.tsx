@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, useAnimation } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { Moon, Sun, Paperclip, Mic, Send, Braces, Zap, BarChart3, Bot, Check } from 'lucide-react';
+import { Moon, Sun, Paperclip, Mic, Send, Braces, Zap, BarChart3, Bot, Check, Menu, X } from 'lucide-react';
 import Link from "next/link";
 
 // Animated Grid Background Component
@@ -81,6 +81,7 @@ export default function LandingPage() {
   const [showTooltip, setShowTooltip] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const featuresRef = useRef<HTMLDivElement | null>(null);
   const pricingRef = useRef<HTMLDivElement | null>(null);
@@ -171,7 +172,7 @@ export default function LandingPage() {
               Pricing
             </button>
             <Link href='/landing/login'>
-              <button className={`cursor-pointer hidden  md:inline-block font-medium text-sm sm:text-base transition-colors hover:text-primary ${
+              <button className={`cursor-pointer hidden md:inline-block font-medium text-sm sm:text-base transition-colors hover:text-primary ${
                 isDark ? 'text-gray-300' : 'text-surfaceDark'
               }`}>
                 Log in
@@ -186,8 +187,16 @@ export default function LandingPage() {
             </button>
 
             <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="cursor-pointer p-2 md:hidden rounded-neu shadow-neu hover:shadow-neuInset transition-all duration-300 active:shadow-neuInset"
+              aria-label="Toggle menu"
+            >
+              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+
+            <button
               onClick={focusInput}
-              className="cursor-pointer px-6 py-2 rounded-2xl
+              className="cursor-pointer px-6 py-2 rounded-2xl hidden sm:inline-block
                 bg-linear-to-br from-primaryDark via-primary via-green-400 to-primaryLight
                 text-surfaceLight font-semibold text-sm sm:text-base md:text-lg transition-all duration-300
                 shadow-[8px_8px_18px_rgba(0,0,0,0.35),_-8px_-8px_18px_rgba(255,255,255,0.25)]
@@ -197,6 +206,52 @@ export default function LandingPage() {
             </button>
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className={`md:hidden mt-4 pb-4 border-t ${isDark ? 'border-slate-700/50' : 'border-gray-200/50'}`}
+          >
+            <div className="flex flex-col space-y-2 pt-4">
+              <button
+                onClick={() => { scrollToFeatures(); setIsMenuOpen(false); }}
+                className={`cursor-pointer text-left font-medium text-sm transition-colors hover:text-primary ${
+                  isDark ? 'text-gray-300' : 'text-surfaceDark'
+                }`}>
+                Features
+              </button>
+              <button
+                onClick={() => { scrollToPricing(); setIsMenuOpen(false); }}
+                className={`cursor-pointer text-left font-medium text-sm transition-colors hover:text-primary ${
+                  isDark ? 'text-gray-300' : 'text-surfaceDark'
+                }`}>
+                Pricing
+              </button>
+              <Link href='/landing/login'>
+                <button
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`cursor-pointer text-left font-medium text-sm transition-colors hover:text-primary ${
+                    isDark ? 'text-gray-300' : 'text-surfaceDark'
+                  }`}>
+                  Log in
+                </button>
+              </Link>
+              <button
+                onClick={() => { focusInput(); setIsMenuOpen(false); }}
+                className="cursor-pointer mt-4 px-6 py-2 rounded-2xl
+                  bg-linear-to-br from-primaryDark via-primary via-green-400 to-primaryLight
+                  text-surfaceLight font-semibold text-sm transition-all duration-300
+                  shadow-[8px_8px_18px_rgba(0,0,0,0.35),_-8px_-8px_18px_rgba(255,255,255,0.25)]
+                  hover:shadow-[6px_6px_14px_rgba(0,0,0,0.3),_-6px_-6px_14px_rgba(255,255,255,0.2)]
+                  active:shadow-[inset_6px_6px_12px_rgba(0,0,0,0.35),_inset_-6px_-6px_12px_rgba(255,255,255,0.2)]">
+                Start Building for free
+              </button>
+            </div>
+          </motion.div>
+        )}
       </nav>
 
       {/* ✅ FIX 2: <main> now wraps ALL page content — hero, features, and pricing.
