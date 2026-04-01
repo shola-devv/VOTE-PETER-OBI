@@ -161,7 +161,7 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
-  if ((session?.user as any)?.id) {
+  if (session && (session.user as any)?.id) {
     fetch(`/api/auth/users/${(session.user as any).id}`)
       .then(res => res.json())
       .then(data => {
