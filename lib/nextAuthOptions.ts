@@ -1,4 +1,3 @@
-import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import connect from "@/lib/db";
@@ -150,7 +149,7 @@ async function createUserInDB(email: string, username: string, provider: string,
   }
 }
 
-export const authOptions: NextAuthOptions = {
+export const authOptions = {
   providers: [
     // Google OAuth Provider
     GoogleProvider({
@@ -233,9 +232,9 @@ export const authOptions: NextAuthOptions = {
   },
 
   callbacks: {
-    async signIn({ user, account }) {
+    async signIn({ user, account }: { user: any; account: any }) {
       // Handle Google sign-in - create user in MongoDB
-      if (account?.provider === "google" && user.email) {
+      if (account?.provider === "google" && user?.email) {
         try {
           const username = generateUsername(user.email);
           const userResult = await createUserInDB(
@@ -256,7 +255,7 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
 
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account }: { token: any; user?: any; account?: any }) {
       // On sign in (when user object exists)
       if (user) {
         token.id = user.id; // This is now the MongoDB ID
@@ -268,9 +267,9 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
 
-    async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = token.id as string;
+    async session({ session, token }: { session: any; token: any }) {
+      if (token && session?.user) {
+        session.user.id = token?.id as string;
         session.user.email = token.email as string;
         session.user.name = token.name as string;
         session.user.image = token.picture as string;
