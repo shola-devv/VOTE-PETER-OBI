@@ -12,9 +12,6 @@ import { estimateComplexity, fetchChainGasData } from "@/lib/coinstats";
 import { AnalysisResponse } from '@/types/analysis';
 
 
-
-
-
 interface Message {
   id: string;
   text: string;
@@ -32,7 +29,6 @@ const AnimatedGrid = ({ darkMode }: { darkMode: boolean }) => {
   }>>([]);
 
   useEffect(() => {
-    // Generate random grid lines that will animate
     const lines = Array.from({ length: 4 }, (_, i) => ({
       id: i,
       isHorizontal: Math.random() > 0.5,
@@ -111,24 +107,23 @@ export default function ChatInterfaceClient() {
     setLoggedUser(null);
   };
 
-const searchParams = useSearchParams();
-  const hasSentInitial = useRef(false); // ← prevent double send
+  const searchParams = useSearchParams();
+  const hasSentInitial = useRef(false);
 
-  // ← auto-send the contract from landing page on mount
   useEffect(() => {
     const contract = searchParams.get('contract');
     if (contract && !hasSentInitial.current) {
       hasSentInitial.current = true;
       setInputValue(contract);
-
-      // slight delay so component is fully mounted
       setTimeout(() => {
         handleSendWithValue(contract);
       }, 300);
     }
   }, []);
 
-  // ← extract send logic to accept a value directly
+  // FIX 3: Single source of truth for sending — handleSend just delegates to handleSendWithValue.
+  // Previously handleSend called handleSendWithValue AND ran its own duplicate fetch, causing two
+  // messages to be appended and two API calls to fire.
   const handleSendWithValue = async (value: string) => {
     if (!value.trim()) return;
 
@@ -152,7 +147,6 @@ const searchParams = useSearchParams();
       });
 
       const data: AnalysisResponse = await res.json();
-
       const complexity = estimateComplexity(value);
 
       if (!res.ok || !data.success) {
@@ -183,6 +177,11 @@ const searchParams = useSearchParams();
     }
   };
 
+  // FIX 3: handleSend now only delegates — no duplicate logic.
+  const handleSend = async () => {
+    if (!inputValue.trim()) return;
+    await handleSendWithValue(inputValue);
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -192,7 +191,6 @@ const searchParams = useSearchParams();
     scrollToBottom();
   }, [messages]);
 
-  // ✅ Dark mode: read from localStorage on mount and apply
   useEffect(() => {
     const isDark =
       localStorage.getItem("darkMode") === "true" ||
@@ -207,7 +205,6 @@ const searchParams = useSearchParams();
     }
   }, []);
 
-  // Fetch gas data on mount
   useEffect(() => {
     const fetchGasData = async () => {
       try {
@@ -235,7 +232,6 @@ const searchParams = useSearchParams();
     fetchGasData();
   }, []);
 
-  // ✅ Dark mode toggle: saves to localStorage and updates class
   const toggleDarkMode = () => {
     const next = !darkMode;
     setDarkMode(next);
@@ -248,7 +244,6 @@ const searchParams = useSearchParams();
     }
   };
 
-  // ✅ New chat: clears messages and closes sidebar
   const handleNewChat = () => {
     setMessages([]);
     setInputValue("");
@@ -257,68 +252,14 @@ const searchParams = useSearchParams();
   };
 
   const formatAnalysisResponse = (data: AnalysisResponse): string => {
-  if (data.optimizationSuggestions.includes("No valid Solidity contract detected")) {
-    return data.optimizationSuggestions;
-  }
-
-  return `🔍 Complexity: ${data.complexity}\n\n${data.optimizationSuggestions}`;
-};
-
-  const handleSend = async () => {
-    if (!inputValue.trim()) return;
-       await handleSendWithValue(inputValue);
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      text: inputValue,
-      sender: "user",
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, newMessage]);
-    const contractCode = inputValue;
-    setInputValue("");
-    setIsTyping(true);
-
-    try {
-      const providerPayload = getApiPayloadMeta();
-      const res = await fetch("/api/analyze-contract", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contractCode, provider: providerPayload.provider, apiKey: providerPayload.apiKey }),
-      });
-
-      const data: AnalysisResponse = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || "Failed to analyze contract");
-      }
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          text: formatAnalysisResponse(data),
-          sender: "ai",
-          timestamp: new Date(),
-        },
-      ]);
-    } catch (error) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          text: `❌ ${error instanceof Error ? error.message : "Something went wrong"}`,
-          sender: "ai",
-          timestamp: new Date(),
-        },
-      ]);
-    } finally {
-      setIsTyping(false);
+    if (data.optimizationSuggestions.includes("No valid Solidity contract detected")) {
+      return data.optimizationSuggestions;
     }
+    return `🔍 Complexity: ${data.complexity}\n\n${data.optimizationSuggestions}`;
   };
 
   return (
-<div className={`min-h-screen relative overflow-hidden ${darkMode ? 'bg-[#0a0f0a]' : 'bg-[#f8faf8]'}`}>
+    <div className={`min-h-screen relative overflow-hidden ${darkMode ? 'bg-[#0a0f0a]' : 'bg-[#f8faf8]'}`}>
       <AnimatedGrid darkMode={darkMode} />
 
       <AnimatePresence>
@@ -362,7 +303,6 @@ const searchParams = useSearchParams();
                 </button>
               </div>
 
-              {/* ✅ New Chat Button */}
               <div className="p-4">
                 <button
                   onClick={handleNewChat}
@@ -373,7 +313,6 @@ const searchParams = useSearchParams();
                 </button>
               </div>
 
-              {/* Gas Prices */}
               <div className={`flex-1 px-4 py-4 border-t ${darkMode ? 'border-green-900/40' : 'border-gray-200'}`}>
                 <div className="flex items-center gap-2 mb-3">
                   <Zap className="w-4 h-4 text-yellow-500" />
@@ -398,7 +337,6 @@ const searchParams = useSearchParams();
                 </div>
               </div>
 
-              {/* ✅ Sidebar Footer with account controls */}
               <div className={`border-t ${darkMode ? 'border-green-900/40' : 'border-gray-200'} p-4 space-y-2`}>
                 {loggedUser ? (
                   <>
@@ -443,41 +381,59 @@ const searchParams = useSearchParams();
 
       {/* Main Content */}
       <div className="relative z-10 flex flex-col h-screen">
-        <header className={`backdrop-blur-sm ${darkMode ? 'bg-[#0a0f0a]/90 border-b border-green-900/30' : 'bg-[#f8faf8]/90 border-b border-gray-200/60'}`}>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
+
+        {/* FIX 1: Header is now always visible on mobile. Added explicit bg colors and ensured
+            the header doesn't collapse. Using min-h instead of relying solely on padding so
+            content never clips on small viewports. */}
+        <header
+          className={`flex-shrink-0 backdrop-blur-sm border-b ${
+            darkMode
+              ? 'bg-[#0a0f0a]/95 border-green-900/30'
+              : 'bg-[#f8faf8]/95 border-gray-200/60'
+          }`}
+        >
+          <div className="w-full px-3 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between min-h-[56px]">
+            {/* Left controls */}
+            <div className="flex items-center gap-1 sm:gap-2">
               <button
                 onClick={() => setIsSidebarOpen(true)}
-                className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-green-950/40 text-green-200/40' : 'hover:bg-gray-100 text-gray-600'}`}
+                className={`p-2 rounded-lg transition-colors ${
+                  darkMode
+                    ? 'hover:bg-green-950/40 text-green-200/70'
+                    : 'hover:bg-gray-100 text-gray-600'
+                }`}
+                aria-label="Open sidebar"
               >
-                <Menu className="w-6 h-6" />
+                <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
 
               <button
                 onClick={toggleDarkMode}
-                className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-green-950/40 text-green-400' : 'hover:bg-gray-100 text-gray-600'}`}
+                className={`p-2 rounded-lg transition-colors ${
+                  darkMode
+                    ? 'hover:bg-green-950/40 text-green-400'
+                    : 'hover:bg-gray-100 text-gray-600'
+                }`}
                 aria-label="Toggle dark mode"
               >
-                {darkMode ? (
-                  <Sun className="w-5 h-5" />
-                ) : (
-                  <Moon className="w-5 h-5" />
-                )}
+                {darkMode ? <Sun className="w-4 h-4 sm:w-5 sm:h-5" /> : <Moon className="w-4 h-4 sm:w-5 sm:h-5" />}
               </button>
             </div>
 
-            <div className="flex items-center gap-3">
+            {/* Centre branding */}
+            <div className="flex items-center gap-2">
               <img
                 src="/smart gauge.png"
                 alt="Smart Gauge Logo"
-                className="w-8 h-8 object-contain"
+                className="w-7 h-7 sm:w-8 sm:h-8 object-contain"
               />
-              <h1 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              <h1 className={`text-base sm:text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                 Smart Gauge
               </h1>
             </div>
 
-            <div className="w-10"></div>
+            {/* Right spacer — matches left width so title stays centred */}
+            <div className="w-[72px] sm:w-[88px]" />
           </div>
         </header>
 
@@ -507,27 +463,32 @@ const searchParams = useSearchParams();
                     key={message.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`flex ${
-                      message.sender === "user" ? "justify-end" : "justify-start"
-                    }`}
+                    className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
                   >
-                    <div className="relative group max-w-[85%] sm:max-w-[80%] min-w-0 sm:overflow-hidden">
+                    <div className="relative group max-w-[85%] sm:max-w-[80%]">
                       <div
-                        className={`rounded-2xl px-4 sm:px-6 py-4 ${message.sender === "user" ? "bg-gradient-to-br from-green-600 to-emerald-600 text-white" : `${darkMode ? 'bg-[#0f1a0f] border border-green-900/40 text-green-200' : 'bg-white border border-gray-200 text-gray-900'}`}`}
+                        className={`rounded-2xl px-4 sm:px-6 py-4 ${
+                          message.sender === "user"
+                            ? "bg-gradient-to-br from-green-600 to-emerald-600 text-white"
+                            : `${darkMode ? 'bg-[#0f1a0f] border border-green-900/40 text-green-200' : 'bg-white border border-gray-200 text-gray-900'}`
+                        }`}
                       >
+                        {/* FIX 2: Added break-words + overflow-hidden so long unbroken strings
+                            (contract addresses, code lines) wrap instead of overflowing the bubble. */}
                         <div className="text-sm sm:text-base prose prose-sm dark:prose-invert max-w-none
-  prose-headings:font-bold prose-headings:mb-2
-  prose-p:mb-2 prose-p:leading-relaxed
-  prose-ul:my-2 prose-ul:list-disc prose-ul:pl-4
-  prose-ol:my-2 prose-ol:list-decimal prose-ol:pl-4
-  prose-li:mb-1
-  prose-code:bg-slate-100 prose-code:dark:bg-slate-700 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs
-  prose-pre:bg-slate-100 prose-pre:dark:bg-slate-900 prose-pre:p-3 prose-pre:rounded-xl prose-pre:overflow-x-auto prose-pre:text-xs
-  prose-strong:font-semibold">
-  <ReactMarkdown>
-    {message.text}
-  </ReactMarkdown>
-</div>
+                          break-words overflow-hidden
+                          prose-headings:font-bold prose-headings:mb-2
+                          prose-p:mb-2 prose-p:leading-relaxed
+                          prose-ul:my-2 prose-ul:list-disc prose-ul:pl-4
+                          prose-ol:my-2 prose-ol:list-decimal prose-ol:pl-4
+                          prose-li:mb-1
+                          prose-code:bg-slate-100 prose-code:dark:bg-slate-700 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs
+                          prose-pre:bg-slate-100 prose-pre:dark:bg-slate-900 prose-pre:p-3 prose-pre:rounded-xl prose-pre:overflow-x-auto prose-pre:text-xs
+                          prose-strong:font-semibold">
+                          <ReactMarkdown>
+                            {message.text}
+                          </ReactMarkdown>
+                        </div>
                         <div
                           className={`text-xs mt-2 ${
                             message.sender === "user"
@@ -535,13 +496,13 @@ const searchParams = useSearchParams();
                               : darkMode ? "text-green-900" : "text-gray-400"
                           }`}
                         >
-                          {message.timestamp.toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                          {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                         </div>
                       </div>
 
+                      {/* FIX 2 (copy button): Kept always-visible on mobile (opacity-100) and
+                          hover-visible on desktop. Positioned outside the bubble flow so it never
+                          overlaps bubble text. */}
                       <button
                         onClick={() => {
                           navigator.clipboard.writeText(message.text);
@@ -551,23 +512,19 @@ const searchParams = useSearchParams();
                         className={`absolute -bottom-3 ${
                           message.sender === "user" ? "right-2" : "left-2"
                         } opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200
-                        flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium shadow-md
+                        flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium shadow-md z-10
                         ${
                           message.sender === "user"
                             ? "bg-green-700 text-green-100 hover:bg-green-800"
-                            : darkMode ? "bg-[#0f1a0f] border border-green-900/40 text-green-200/40 hover:bg-green-950/40" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                            : darkMode
+                              ? "bg-[#0f1a0f] border border-green-900/40 text-green-200/40 hover:bg-green-950/40"
+                              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                         }`}
                       >
                         {copiedId === message.id ? (
-                          <>
-                            <Check className="w-3 h-3" />
-                            Copied
-                          </>
+                          <><Check className="w-3 h-3" />Copied</>
                         ) : (
-                          <>
-                            <Copy className="w-3 h-3" />
-                            Copy
-                          </>
+                          <><Copy className="w-3 h-3" />Copy</>
                         )}
                       </button>
                     </div>
@@ -595,12 +552,13 @@ const searchParams = useSearchParams();
             </div>
           </div>
 
-          <div className=" backdrop-blur-sm">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          {/* Input area */}
+          <div className="flex-shrink-0 backdrop-blur-sm">
+            <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-                <div className="relative  dark:bg-slate-800/50 rounded-2xl shadow-lg p-3 sm:p-4 md:p-6 transition-all duration-300">
-                  <label className="block text-sm sm:text-base md:text-lg font-medium text-slate-700 dark:text-gray-600 mb-4">
-                    paste in your smart contract and AI does the magic:
+                <div className="relative dark:bg-slate-800/50 rounded-2xl shadow-lg p-3 sm:p-4 transition-all duration-300">
+                  <label className={`block text-xs sm:text-sm font-medium mb-2 sm:mb-3 ${darkMode ? 'text-gray-400' : 'text-slate-600'}`}>
+                    Paste in your smart contract and AI does the magic:
                   </label>
 
                   <div className="relative">
@@ -612,20 +570,25 @@ const searchParams = useSearchParams();
                       }`}
                     />
 
+                    {/* FIX 2: Changed overflow-hidden → overflow-y-auto so text scrolls rather than
+                        clips. Added word-break: break-all via style so extremely long unspaced
+                        strings (contract code) wrap instead of widening the textarea. Adjusted
+                        padding-right to leave room for the button column without being excessive. */}
                     <textarea
                       ref={textareaRef}
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
                       placeholder="pragma solidity..."
-                      rows={1}
-                      className={`relative w-full min-h-[100px] max-h-68 pl-4 pr-32 py-3 rounded-2xl
+                      rows={4}
+                      style={{ wordBreak: 'break-all' }}
+                      className={`relative w-full min-h-[100px] max-h-64 pl-3 sm:pl-4 pr-28 sm:pr-32 py-3 rounded-2xl
                         bg-gradient-to-br from-primaryDark/40 via-primary/30 to-primaryLight/40
-                                           backdrop-blur-md resize-none overflow-hidden text-sm sm:text-base
-                                           transition-all duration-300 focus:outline-none
-                                           shadow-[8px_8px_18px_rgba(0,0,0,0.35),_-8px_-8px_18px_rgba(255,255,255,0.15)]
-                                           focus:shadow-[inset_6px_6px_14px_rgba(0,0,0,0.4),_inset_-6px_-6px_14px_rgba(255,255,255,0.15)]
-                                           ${darkMode ? 'text-white placeholder-gray-400' : 'text-surfaceDark placeholder-surfaceShadow'}
-                                          `}
+                        backdrop-blur-md resize-none overflow-y-auto text-sm sm:text-base
+                        transition-all duration-300 focus:outline-none
+                        shadow-[8px_8px_18px_rgba(0,0,0,0.35),_-8px_-8px_18px_rgba(255,255,255,0.15)]
+                        focus:shadow-[inset_6px_6px_14px_rgba(0,0,0,0.4),_inset_-6px_-6px_14px_rgba(255,255,255,0.15)]
+                        ${darkMode ? 'text-white placeholder-gray-400' : 'text-surfaceDark placeholder-surfaceShadow'}
+                      `}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && e.metaKey) {
                           handleSend();
@@ -633,15 +596,16 @@ const searchParams = useSearchParams();
                       }}
                     />
 
-                    <div className="absolute bottom-3 right-3 flex items-center gap-2">
+                    {/* Button cluster — absolutely positioned so it never pushes textarea wider */}
+                    <div className="absolute bottom-3 right-3 flex items-center gap-1 sm:gap-2">
                       <div className="relative group">
                         <button
                           disabled
                           onMouseEnter={() => setShowTooltip("clip")}
                           onMouseLeave={() => setShowTooltip(null)}
-                          className="p-2 rounded-full bg-slate-200 dark:bg-slate-700/50 opacity-50 cursor-not-allowed"
+                          className="p-1.5 sm:p-2 rounded-full bg-slate-200 dark:bg-slate-700/50 opacity-50 cursor-not-allowed"
                         >
-                          <Paperclip className="w-4 h-4 sm:w-5 sm:h-5 text-slate-500 dark:text-gray-400" />
+                          <Paperclip className="w-4 h-4 text-slate-500 dark:text-gray-400" />
                         </button>
                         {showTooltip === "clip" && (
                           <div className="absolute bottom-12 right-0 bg-slate-900 dark:bg-black text-white text-xs px-3 py-1.5 rounded-md shadow-lg whitespace-nowrap">
@@ -655,9 +619,9 @@ const searchParams = useSearchParams();
                           disabled
                           onMouseEnter={() => setShowTooltip("mic")}
                           onMouseLeave={() => setShowTooltip(null)}
-                          className={`p-2 rounded-full ${darkMode ? 'bg-green-950/40' : 'bg-slate-200'} opacity-50 cursor-not-allowed`}
+                          className={`p-1.5 sm:p-2 rounded-full ${darkMode ? 'bg-green-950/40' : 'bg-slate-200'} opacity-50 cursor-not-allowed`}
                         >
-                          <Mic className={`w-4 h-4 sm:w-5 sm:h-5 ${darkMode ? 'text-green-200/40' : 'text-slate-500'}`} />
+                          <Mic className={`w-4 h-4 ${darkMode ? 'text-green-200/40' : 'text-slate-500'}`} />
                         </button>
                         {showTooltip === "mic" && (
                           <div className="absolute bottom-12 right-0 bg-slate-900 dark:bg-black text-white text-xs px-3 py-1.5 rounded-md shadow-lg whitespace-nowrap">
@@ -671,9 +635,13 @@ const searchParams = useSearchParams();
                         whileHover={{ scale: inputValue.trim() ? 1.07 : 1 }}
                         whileTap={{ scale: inputValue.trim() ? 0.95 : 1 }}
                         disabled={!inputValue.trim()}
-                        className={`relative p-2 rounded-full transition-all duration-300 ${inputValue.trim() ? 'bg-gradient-to-r from-green-600 to-emerald-600 ring-2 ring-green-400/60 shadow-[0_0_20px_rgba(34,197,94,0.6)]' : 'bg-slate-400 dark:bg-green-950/30 opacity-50 cursor-not-allowed'}`}
+                        className={`relative p-1.5 sm:p-2 rounded-full transition-all duration-300 ${
+                          inputValue.trim()
+                            ? 'bg-gradient-to-r from-green-600 to-emerald-600 ring-2 ring-green-400/60 shadow-[0_0_20px_rgba(34,197,94,0.6)]'
+                            : 'bg-slate-400 dark:bg-green-950/30 opacity-50 cursor-not-allowed'
+                        }`}
                       >
-                        <Send className="w-4 cursor-pointer h-4 sm:w-5 sm:h-5 text-white" />
+                        <Send className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                       </motion.button>
                     </div>
                   </div>
