@@ -1,5 +1,5 @@
 'use client';
-import useSWR from 'swr';
+
 // Minimal placeholder hook to avoid import errors. Not used by the new analyzer.
 export function usePortfolio() {
   return {
@@ -17,7 +17,6 @@ export function usePortfolio() {
   refreshAll: () => Promise.resolve(),
   };
 }
-'use client';
 import useSWR, { mutate } from 'swr';
 // This hook is deprecated - use new AI contract analyzer instead
 export function usePortfolio() {
