@@ -188,7 +188,7 @@ useEffect(() => {
   const handleLogout = () => router.push('/');
   const handleDeleteAccount = () => { setShowDeleteModal(false); router.push('/'); };
 
-  // Shared token classes from login page palette
+  // Shard token classes from login page palette
   const pageBg    = isDark ? 'bg-[#0a0f0a]'   : 'bg-[#f8faf8]';
   const cardBg    = isDark ? 'bg-[#0f1a0f]'   : 'bg-white';
   const cardBorder = isDark ? 'border-green-900/40' : 'border-gray-200';
