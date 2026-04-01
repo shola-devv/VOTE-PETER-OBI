@@ -511,9 +511,9 @@ const searchParams = useSearchParams();
                       message.sender === "user" ? "justify-end" : "justify-start"
                     }`}
                   >
-                    <div className="relative group max-w-[80%] min-w-0 overflow-hidden">
+                    <div className="relative group max-w-[85%] sm:max-w-[80%] min-w-0 sm:overflow-hidden">
                       <div
-                        className={`rounded-2xl px-6 py-4 ${message.sender === "user" ? "bg-gradient-to-br from-green-600 to-emerald-600 text-white" : `${darkMode ? 'bg-[#0f1a0f] border border-green-900/40 text-green-200' : 'bg-white border border-gray-200 text-gray-900'}`}`}
+                        className={`rounded-2xl px-4 sm:px-6 py-4 ${message.sender === "user" ? "bg-gradient-to-br from-green-600 to-emerald-600 text-white" : `${darkMode ? 'bg-[#0f1a0f] border border-green-900/40 text-green-200' : 'bg-white border border-gray-200 text-gray-900'}`}`}
                       >
                         <div className="text-sm sm:text-base prose prose-sm dark:prose-invert max-w-none
   prose-headings:font-bold prose-headings:mb-2

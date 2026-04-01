@@ -144,14 +144,14 @@ export default function LandingPage() {
       <AnimatedGrid darkMode={darkMode} />
 
       {/* Navigation */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8 py-2 sm:py-4 border-b transition-colors duration-300 ${
+      <nav className={`fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8 py-3 sm:py-4 border-b transition-colors duration-300 ${
         isDark ? 'bg-slate-900/95 border-slate-700/50' : 'bg-surface/95 border-gray-200/50'
       }`}>
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="max-w-7xl mx-auto flex items-center justify-between h-16 sm:h-auto">
           <div className="flex items-center space-x-2">
             <img src="/smart gauge.png" alt="Smart Gauge Logo"
-              className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 xl:w-20 xl:h-20 object-contain" />
-            <span className={`text-sm sm:text-lg font-bold ${isDark ? 'text-white' : 'text-surfaceDark'}`}>
+              className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 xl:w-20 xl:h-20 object-contain flex-shrink-0" />
+            <span className={`text-base sm:text-lg font-bold whitespace-nowrap ${isDark ? 'text-white' : 'text-surfaceDark'}`}>
               Smart Gauge
             </span>
           </div>
@@ -180,15 +180,15 @@ export default function LandingPage() {
             </Link>
             <button
               onClick={toggleDarkMode}
-              className="cursor-pointer p-2 rounded-neu shadow-neu hover:shadow-neuInset transition-all duration-300 active:shadow-neuInset"
+              className="cursor-pointer p-2.5 sm:p-2 rounded-neu shadow-neu hover:shadow-neuInset transition-all duration-300 active:shadow-neuInset"
               aria-label="Toggle dark mode"
             >
-              {isDark ? <Sun className="w-5 h-5 text-primaryLight" /> : <Moon className="w-5 h-5 text-surfaceDark" />}
+              {isDark ? <Sun className="w-5 h-5 sm:w-5 sm:h-5 text-primaryLight" /> : <Moon className="w-5 h-5 sm:w-5 sm:h-5 text-surfaceDark" />}
             </button>
 
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="cursor-pointer p-2 md:hidden rounded-neu shadow-neu hover:shadow-neuInset transition-all duration-300 active:shadow-neuInset"
+              className="cursor-pointer p-2.5 sm:p-2 md:hidden rounded-neu shadow-neu hover:shadow-neuInset transition-all duration-300 active:shadow-neuInset"
               aria-label="Toggle menu"
             >
               {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -256,8 +256,8 @@ export default function LandingPage() {
 
       {/* ✅ FIX 2: <main> now wraps ALL page content — hero, features, and pricing.
            Previously </main> closed prematurely after the hero, orphaning the sections. */}
-      <main style={{ position: 'relative', zIndex: 10, paddingTop: '5rem' }}>
-        <div className="max-w-6xl mx-auto mt-12 pb-8 px-4 sm:px-6 lg:px-8">
+      <main style={{ position: 'relative', zIndex: 10, paddingTop: '6rem' }}>
+        <div className="max-w-6xl mx-auto mt-8 sm:mt-12 pb-8 px-4 sm:px-6 lg:px-8">
 
           {/* Hero Text */}
           <div className="text-center mb-16 md:mb-8 lg:mb-16">
