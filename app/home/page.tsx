@@ -4,9 +4,9 @@ import { Suspense } from 'react';
 import ChatInterface from '../../components/chat-interface';
 
 export default function Page() {
-  return(
- <Suspense fallback={<div className="min-h-screen bg-slate-900" />}>
-  <ChatInterface />;
-   </Suspense>
-)
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-900" />}>
+      <ChatInterface />
+    </Suspense>
+  );
 }

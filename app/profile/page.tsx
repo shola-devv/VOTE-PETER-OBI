@@ -130,10 +130,10 @@ export default function ProfilePage() {
   const { data: session, status } = useSession();
   const [darkMode, setDarkMode] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [joinedDate, setJoinedDate] = useState('Loading...');
 
-  const username = session?.user?.name || 'User';
-  const email = session?.user?.email || 'user@example.com';
-  const joinedDate = 'March 2025'; // You can fetch from DB if available
+  const username = session?.user?.name || '...';
+  const email = session?.user?.email || '...';
   const initials = username.slice(0, 2).toUpperCase();
   const [hasApiKey, setHasApiKey] = useState(false);
   
@@ -160,6 +160,23 @@ useEffect(() => {
   setHasApiKey(keyFound);
 }, []);
 
+useEffect(() => {
+  if ((session?.user as any)?.id) {
+    fetch(`/api/auth/users/${(session.user as any).id}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.user?.createdAt) {
+          const date = new Date(data.user.createdAt);
+          setJoinedDate(date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' }));
+        }
+      })
+      .catch(err => {
+        console.error('Failed to fetch user data:', err);
+        setJoinedDate('Unknown');
+      });
+  }
+}, [session]);
+
   const toggleDarkMode = () => {
     setDarkMode((prev) => {
       const next = !prev;
@@ -172,7 +189,7 @@ useEffect(() => {
   const handleDeleteAccount = () => { setShowDeleteModal(false); router.push('/'); };
 
   // Shared token classes from login page palette
-  const pageBg    = isDark ? 'bg-[#0a0f0a]'   : 'bg-surface';
+  const pageBg    = isDark ? 'bg-[#0a0f0a]'   : 'bg-[#f8faf8]';
   const cardBg    = isDark ? 'bg-[#0f1a0f]'   : 'bg-white';
   const cardBorder = isDark ? 'border-green-900/40' : 'border-gray-200';
   const textPrimary = isDark ? 'text-white'    : 'text-gray-900';

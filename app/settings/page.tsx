@@ -1,6 +1,5 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Moon, Sun, Key, User, LogOut, ChevronDown, Check, Eye, EyeOff, Save, AlertCircle } from 'lucide-react';
@@ -63,9 +62,6 @@ function SettingsContent() {
   const [toast, setToast]         = useState<Toast | null>(null);
   const [showKey, setShowKey]     = useState(false);
   const [apiKeySaved, setApiKeySaved] = useState(false);
-  const [username, setUsername]   = useState(session?.user?.name || 'User');
-  const [usernameSaved, setUsernameSaved] = useState(false);
-  const [toast, setToast]         = useState<Toast | null>(null);
 
   const isDark = darkMode;
 
@@ -381,4 +377,4 @@ function SettingsContent() {
   );
 }
 
-// ssr: f
+export default SettingsContent;

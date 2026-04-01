@@ -1,12 +1,10 @@
 
-'use client'
-
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import Script from "next/script";
 import { inter } from "./fonts";
-import { SessionProvider } from 'next-auth/react';
+import { Providers } from '@/components/providers';
 
 
 const geistSans = localFont({
@@ -92,9 +90,9 @@ export default function RootLayout({
           `}
         </Script>
 
-        <SessionProvider>
+        <Providers>
           {children}
-        </SessionProvider>
+        </Providers>
       </body>
     </html>
   );

@@ -93,6 +93,7 @@ export const GET = async (
           profile: user.profile ?? 2,
           image: user.image ?? null,
           subscription: user.subscription ?? null,
+          createdAt: user.createdAt,
         },
       },
       200
