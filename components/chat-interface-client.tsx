@@ -259,7 +259,7 @@ export default function ChatInterfaceClient() {
   };
 
   return (
-    <div className={`min-h-screen relative overflow-hidden ${darkMode ? 'bg-[#0a0f0a]' : 'bg-[#f8faf8]'}`}>
+    <div className={`min-h-screen relative overflow-x-hidden ${darkMode ? 'bg-[#0a0f0a]' : 'bg-[#f8faf8]'}`}>
       <AnimatedGrid darkMode={darkMode} />
 
       <AnimatePresence>
@@ -380,13 +380,10 @@ export default function ChatInterfaceClient() {
       </AnimatePresence>
 
       {/* Main Content */}
-      <div className="relative z-10 flex flex-col h-screen">
+      <div className="relative z-10 flex flex-col" style={{ height: '100dvh' }}>
 
-        {/* FIX 1: Header is now always visible on mobile. Added explicit bg colors and ensured
-            the header doesn't collapse. Using min-h instead of relying solely on padding so
-            content never clips on small viewports. */}
         <header
-          className={`flex-shrink-0 backdrop-blur-sm border-b ${
+          className={`flex-shrink-0 backdrop-blur-sm border-b z-20 ${
             darkMode
               ? 'bg-[#0a0f0a]/95 border-green-900/30'
               : 'bg-[#f8faf8]/95 border-gray-200/60'
@@ -399,8 +396,8 @@ export default function ChatInterfaceClient() {
                 onClick={() => setIsSidebarOpen(true)}
                 className={`p-2 rounded-lg transition-colors ${
                   darkMode
-                    ? 'hover:bg-green-950/40 text-green-200/70'
-                    : 'hover:bg-gray-100 text-gray-600'
+                    ? 'hover:bg-green-950/40 text-green-300'
+                    : 'hover:bg-gray-100 text-gray-700'
                 }`}
                 aria-label="Open sidebar"
               >
@@ -412,7 +409,7 @@ export default function ChatInterfaceClient() {
                 className={`p-2 rounded-lg transition-colors ${
                   darkMode
                     ? 'hover:bg-green-950/40 text-green-400'
-                    : 'hover:bg-gray-100 text-gray-600'
+                    : 'hover:bg-gray-100 text-gray-700'
                 }`}
                 aria-label="Toggle dark mode"
               >
@@ -432,7 +429,7 @@ export default function ChatInterfaceClient() {
               </h1>
             </div>
 
-            {/* Right spacer — matches left width so title stays centred */}
+            {/* Right spacer — mirrors left side width so title stays centred */}
             <div className="w-[72px] sm:w-[88px]" />
           </div>
         </header>
@@ -476,7 +473,7 @@ export default function ChatInterfaceClient() {
                         {/* FIX 2: Added break-words + overflow-hidden so long unbroken strings
                             (contract addresses, code lines) wrap instead of overflowing the bubble. */}
                         <div className="text-sm sm:text-base prose prose-sm dark:prose-invert max-w-none
-                          break-words overflow-hidden
+                          break-words overflow-x-hidden
                           prose-headings:font-bold prose-headings:mb-2
                           prose-p:mb-2 prose-p:leading-relaxed
                           prose-ul:my-2 prose-ul:list-disc prose-ul:pl-4
