@@ -494,8 +494,9 @@ export default function ChatInterfaceClient() {
                                   </pre>
                                 </div>
                               ),
-                              code: ({ inline, children, ...props }: { inline?: boolean; children?: React.ReactNode; [key: string]: unknown }) =>
-                                inline ? (
+                              code: ({ node, children, ...props }) => {
+                                const isInline = node?.position?.start.line === node?.position?.end.line;
+                                return isInline ? (
                                   <code
                                     className={`px-1 py-0.5 rounded text-xs ${
                                       darkMode ? 'bg-green-950/60 text-green-300' : 'bg-slate-100 text-slate-700'
@@ -508,7 +509,8 @@ export default function ChatInterfaceClient() {
                                   <code className={`text-xs ${darkMode ? 'text-green-300' : 'text-slate-800'}`} {...props}>
                                     {children}
                                   </code>
-                                ),
+                                );
+                              },
                             }}
                           >
                             {message.text}
