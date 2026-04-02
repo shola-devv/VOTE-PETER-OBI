@@ -418,7 +418,7 @@ export default function ChatInterfaceClient() {
         }}
       >
         {/* Messages scroll area */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '24px 16px', paddingTop: 32 }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '24px 16px', paddingTop: 44 }}>
           <div style={{ maxWidth: 768, margin: '0 auto' }}>
             {messages.length === 0 ? (
               <div style={{ textAlign: 'center', paddingTop: 80 }}>
