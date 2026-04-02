@@ -418,7 +418,7 @@ export default function ChatInterfaceClient() {
         }}
       >
         {/* Messages scroll area */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '24px 16px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '24px 16px', paddingTop: 32 }}>
           <div style={{ maxWidth: 768, margin: '0 auto' }}>
             {messages.length === 0 ? (
               <div style={{ textAlign: 'center', paddingTop: 80 }}>
@@ -544,66 +544,80 @@ export default function ChatInterfaceClient() {
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 500, marginBottom: 10, color: darkMode ? '#6b7280' : '#64748b' }}>
                   Paste in your smart contract and AI does the magic:
                 </label>
-                <div style={{ position: 'relative' }}>
-                  <div
-                    style={{
-                      position: 'absolute', inset: 0, borderRadius: 16, pointerEvents: 'none',
-                      opacity: isTyping ? 1 : 0, transition: 'opacity 0.5s',
-                      background: 'linear-gradient(to right, rgba(34,197,94,0.08), rgba(52,211,153,0.08), rgba(34,197,94,0.08))',
-                    }}
-                  />
-                  <textarea
-                    ref={textareaRef}
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    placeholder="pragma solidity..."
-                    rows={4}
-                    onKeyDown={(e) => { if (e.key === 'Enter' && e.metaKey) handleSend(); }}
-                    style={{
-                      width: '100%',
-                      minHeight: 100,
-                      maxHeight: 240,
-                      paddingLeft: 14,
-                      paddingRight: 120,
-                      paddingTop: 12,
-                      paddingBottom: 12,
-                      borderRadius: 16,
-                      resize: 'none',
-                      overflowY: 'auto',
-                      fontSize: 14,
-                      lineHeight: 1.6,
-                      outline: 'none',
-                      border: darkMode ? '1px solid rgba(20,83,45,0.3)' : '1px solid #e2e8f0',
-                      backgroundColor: darkMode ? '#0a140a' : '#f8fafc',
-                      color: darkMode ? '#ffffff' : '#1e293b',
-                      wordBreak: 'break-word',
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                  <div style={{ position: 'absolute', bottom: 10, right: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <button disabled style={{ padding: 7, borderRadius: '50%', background: darkMode ? 'rgba(20,83,45,0.2)' : '#f1f5f9', border: 'none', opacity: 0.5, cursor: 'not-allowed', display: 'flex' }}>
-                      <Paperclip size={16} color={darkMode ? '#86efac' : '#64748b'} />
-                    </button>
-                    <button disabled style={{ padding: 7, borderRadius: '50%', background: darkMode ? 'rgba(20,83,45,0.2)' : '#f1f5f9', border: 'none', opacity: 0.5, cursor: 'not-allowed', display: 'flex' }}>
-                      <Mic size={16} color={darkMode ? '#86efac' : '#64748b'} />
-                    </button>
-                    <motion.button
-                      onClick={handleSend}
-                      disabled={!inputValue.trim()}
-                      whileHover={{ scale: inputValue.trim() ? 1.07 : 1 }}
-                      whileTap={{ scale: inputValue.trim() ? 0.95 : 1 }}
+                  <div style={{ position: 'relative' }}>
+                    <div
                       style={{
-                        padding: 8, borderRadius: '50%', border: 'none', cursor: inputValue.trim() ? 'pointer' : 'not-allowed',
-                        background: inputValue.trim() ? 'linear-gradient(135deg, #16a34a, #059669)' : '#94a3b8',
-                        opacity: inputValue.trim() ? 1 : 0.5,
-                        boxShadow: inputValue.trim() ? '0 0 16px rgba(34,197,94,0.5)' : 'none',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        position: 'absolute', inset: 0, borderRadius: 16, pointerEvents: 'none',
+                        opacity: isTyping ? 1 : 0, transition: 'opacity 0.5s',
+                        background: 'linear-gradient(to right, rgba(34,197,94,0.08), rgba(52,211,153,0.08), rgba(34,197,94,0.08))',
                       }}
-                    >
-                      <Send size={18} color="#fff" />
-                    </motion.button>
+                    />
+                    <textarea
+                      ref={textareaRef}
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      placeholder="pragma solidity..."
+                      rows={1}
+                      className={`relative w-full min-h-[100px] max-h-68 pl-4 pr-32 py-3 rounded-2xl
+                        bg-gradient-to-br from-primaryDark/40 via-primary/30 to-primaryLight/40
+                        backdrop-blur-md resize-none overflow-hidden text-sm sm:text-base
+                        transition-all duration-300 focus:outline-none
+                        shadow-[8px_8px_18px_rgba(0,0,0,0.35),_-8px_-8px_18px_rgba(255,255,255,0.15)]
+                        focus:shadow-[inset_6px_6px_14px_rgba(0,0,0,0.4),_inset_-6px_-6px_14px_rgba(255,255,255,0.15)]
+                        ${darkMode ? 'text-white placeholder-gray-400' : 'text-surfaceDark placeholder-surfaceShadow'}
+                      `}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && e.metaKey) {
+                          handleSend();
+                        }
+                      }}
+                    />
+                    <div className="absolute bottom-3 right-3 flex items-center gap-2">
+                      <div className="relative group">
+                        <button
+                          disabled
+                          onMouseEnter={() => setShowTooltip("clip")}
+                          onMouseLeave={() => setShowTooltip(null)}
+                          className="p-2 rounded-full bg-slate-200 dark:bg-slate-700/50 opacity-50 cursor-not-allowed"
+                        >
+                          <Paperclip className="w-4 h-4 sm:w-5 sm:h-5 text-slate-500 dark:text-gray-400" />
+                        </button>
+                        {showTooltip === "clip" && (
+                          <div className="absolute bottom-12 right-0 bg-slate-900 dark:bg-black text-white text-xs px-3 py-1.5 rounded-md shadow-lg whitespace-nowrap">
+                            Coming soon
+                          </div>
+                        )}
+                      </div>
+                      <div className="relative group">
+                        <button
+                          disabled
+                          onMouseEnter={() => setShowTooltip("mic")}
+                          onMouseLeave={() => setShowTooltip(null)}
+                          className={`p-2 rounded-full ${darkMode ? 'bg-green-950/40' : 'bg-slate-200'} opacity-50 cursor-not-allowed`}
+                        >
+                          <Mic className={`w-4 h-4 sm:w-5 sm:h-5 ${darkMode ? 'text-green-200/40' : 'text-slate-500'}`} />
+                        </button>
+                        {showTooltip === "mic" && (
+                          <div className="absolute bottom-12 right-0 bg-slate-900 dark:bg-black text-white text-xs px-3 py-1.5 rounded-md shadow-lg whitespace-nowrap">
+                            Coming soon
+                          </div>
+                        )}
+                      </div>
+                      <motion.button
+                        onClick={handleSend}
+                        whileHover={{ scale: inputValue.trim() ? 1.07 : 1 }}
+                        whileTap={{ scale: inputValue.trim() ? 0.95 : 1 }}
+                        disabled={!inputValue.trim()}
+                        className={`relative p-2 rounded-full transition-all duration-300 ${
+                          inputValue.trim()
+                            ? 'bg-gradient-to-r from-green-600 to-emerald-600 ring-2 ring-green-400/60 shadow-[0_0_20px_rgba(34,197,94,0.6)]'
+                            : 'bg-slate-400 dark:bg-green-950/30 opacity-50 cursor-not-allowed'
+                        }`}
+                      >
+                        <Send className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                      </motion.button>
+                    </div>
                   </div>
-                </div>
               </div>
             </motion.div>
           </div>
