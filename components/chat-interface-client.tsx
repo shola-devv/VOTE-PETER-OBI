@@ -624,5 +624,5 @@ export default function ChatInterfaceClient() {
         </div>
       </div>
     </div>
-  );
+  )
 }
