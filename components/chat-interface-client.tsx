@@ -383,13 +383,14 @@ export default function ChatInterfaceClient() {
       <div className="relative z-10 flex flex-col" style={{ height: '100dvh' }}>
 
         <header
-          className={`flex-shrink-0 backdrop-blur-sm border-b z-20 ${
+          className={`flex-shrink-0 border-b z-20 ${
             darkMode
-              ? 'bg-[#0a0f0a]/95 border-green-900/30'
-              : 'bg-[#f8faf8]/95 border-gray-200/60'
+              ? 'bg-[#0a0f0a] border-green-900/30'
+              : 'bg-[#f8faf8] border-gray-200'
           }`}
+          style={{ position: 'relative' }}
         >
-          <div className="w-full px-3 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between min-h-[56px]">
+          <div className="w-full px-3 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between" style={{ minHeight: '56px' }}>
             {/* Left controls */}
             <div className="flex items-center gap-1 sm:gap-2">
               <button
@@ -470,19 +471,46 @@ export default function ChatInterfaceClient() {
                             : `${darkMode ? 'bg-[#0f1a0f] border border-green-900/40 text-green-200' : 'bg-white border border-gray-200 text-gray-900'}`
                         }`}
                       >
-                        {/* FIX 2: Added break-words + overflow-hidden so long unbroken strings
-                            (contract addresses, code lines) wrap instead of overflowing the bubble. */}
                         <div className="text-sm sm:text-base prose prose-sm dark:prose-invert max-w-none
-                          break-words overflow-x-hidden
+                          break-words
                           prose-headings:font-bold prose-headings:mb-2
                           prose-p:mb-2 prose-p:leading-relaxed
                           prose-ul:my-2 prose-ul:list-disc prose-ul:pl-4
                           prose-ol:my-2 prose-ol:list-decimal prose-ol:pl-4
                           prose-li:mb-1
                           prose-code:bg-slate-100 prose-code:dark:bg-slate-700 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs
-                          prose-pre:bg-slate-100 prose-pre:dark:bg-slate-900 prose-pre:p-3 prose-pre:rounded-xl prose-pre:overflow-x-auto prose-pre:text-xs
                           prose-strong:font-semibold">
-                          <ReactMarkdown>
+                          <ReactMarkdown
+                            components={{
+                              pre: ({ children }) => (
+                                <div
+                                  className={`my-3 rounded-xl overflow-x-auto text-xs ${
+                                    darkMode ? 'bg-[#0a0f0a] border border-green-900/40' : 'bg-slate-100 border border-slate-200'
+                                  }`}
+                                  style={{ WebkitOverflowScrolling: 'touch' }}
+                                >
+                                  <pre className="p-3 m-0 w-max min-w-full whitespace-pre">
+                                    {children}
+                                  </pre>
+                                </div>
+                              ),
+                              code: ({ inline, children, ...props }: { inline?: boolean; children?: React.ReactNode; [key: string]: unknown }) =>
+                                inline ? (
+                                  <code
+                                    className={`px-1 py-0.5 rounded text-xs ${
+                                      darkMode ? 'bg-green-950/60 text-green-300' : 'bg-slate-100 text-slate-700'
+                                    }`}
+                                    {...props}
+                                  >
+                                    {children}
+                                  </code>
+                                ) : (
+                                  <code className={`text-xs ${darkMode ? 'text-green-300' : 'text-slate-800'}`} {...props}>
+                                    {children}
+                                  </code>
+                                ),
+                            }}
+                          >
                             {message.text}
                           </ReactMarkdown>
                         </div>
