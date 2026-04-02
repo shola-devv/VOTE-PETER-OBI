@@ -383,14 +383,16 @@ export default function ChatInterfaceClient() {
       <div className="relative z-10 flex flex-col" style={{ height: '100dvh' }}>
 
         <header
-          className={`flex-shrink-0 border-b z-20 ${
-            darkMode
-              ? 'bg-[#0a0f0a] border-green-900/30'
-              : 'bg-[#f8faf8] border-gray-200'
-          }`}
-          style={{ position: 'relative' }}
+          style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 30,
+            flexShrink: 0,
+            borderBottom: darkMode ? '1px solid rgba(20,83,45,0.4)' : '1px solid #e5e7eb',
+            backgroundColor: darkMode ? '#0a0f0a' : '#f8faf8',
+          }}
         >
-          <div className="w-full px-3 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between" style={{ minHeight: '56px' }}>
+          <div className="w-full px-3 sm:px-6 lg:px-8 flex items-center justify-between" style={{ minHeight: '56px', paddingTop: '12px', paddingBottom: '12px' }}>
             {/* Left controls */}
             <div className="flex items-center gap-1 sm:gap-2">
               <button
@@ -471,51 +473,67 @@ export default function ChatInterfaceClient() {
                             : `${darkMode ? 'bg-[#0f1a0f] border border-green-900/40 text-green-200' : 'bg-white border border-gray-200 text-gray-900'}`
                         }`}
                       >
-                        <div className="text-sm sm:text-base prose prose-sm dark:prose-invert max-w-none
-                          break-words
-                          prose-headings:font-bold prose-headings:mb-2
-                          prose-p:mb-2 prose-p:leading-relaxed
-                          prose-ul:my-2 prose-ul:list-disc prose-ul:pl-4
-                          prose-ol:my-2 prose-ol:list-decimal prose-ol:pl-4
-                          prose-li:mb-1
-                          prose-code:bg-slate-100 prose-code:dark:bg-slate-700 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs
-                          prose-strong:font-semibold">
-                          <ReactMarkdown
-                            components={{
-                              pre: ({ children }) => (
-                                <div
-                                  className={`my-3 rounded-xl overflow-x-auto text-xs ${
-                                    darkMode ? 'bg-[#0a0f0a] border border-green-900/40' : 'bg-slate-100 border border-slate-200'
-                                  }`}
-                                  style={{ WebkitOverflowScrolling: 'touch' }}
-                                >
-                                  <pre className="p-3 m-0 w-max min-w-full whitespace-pre">
-                                    {children}
-                                  </pre>
-                                </div>
-                              ),
-                              code: ({ node, children, ...props }) => {
-                                const isInline = node?.position?.start.line === node?.position?.end.line;
-                                return isInline ? (
-                                  <code
-                                    className={`px-1 py-0.5 rounded text-xs ${
-                                      darkMode ? 'bg-green-950/60 text-green-300' : 'bg-slate-100 text-slate-700'
-                                    }`}
-                                    {...props}
-                                  >
-                                    {children}
-                                  </code>
-                                ) : (
-                                  <code className={`text-xs ${darkMode ? 'text-green-300' : 'text-slate-800'}`} {...props}>
-                                    {children}
-                                  </code>
-                                );
-                              },
-                            }}
-                          >
+                        {message.sender === "user" ? (
+                          /* User bubble: plain text only, no markdown parsing */
+                          <p className="text-sm sm:text-base whitespace-pre-wrap break-words">
                             {message.text}
-                          </ReactMarkdown>
-                        </div>
+                          </p>
+                        ) : (
+                          /* AI bubble: full markdown with scrollable code blocks */
+                          <div className="text-sm sm:text-base prose prose-sm dark:prose-invert max-w-none
+                            break-words
+                            prose-headings:font-bold prose-headings:mb-2
+                            prose-p:mb-2 prose-p:leading-relaxed
+                            prose-ul:my-2 prose-ul:list-disc prose-ul:pl-4
+                            prose-ol:my-2 prose-ol:list-decimal prose-ol:pl-4
+                            prose-li:mb-1
+                            prose-code:bg-slate-100 prose-code:dark:bg-slate-700 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs
+                            prose-strong:font-semibold">
+                            <ReactMarkdown
+                              components={{
+                                pre: ({ children }) => (
+                                  <div
+                                    style={{
+                                      overflowX: 'auto',
+                                      WebkitOverflowScrolling: 'touch',
+                                      borderRadius: '12px',
+                                      margin: '12px 0',
+                                      border: darkMode ? '1px solid rgba(20,83,45,0.5)' : '1px solid #e2e8f0',
+                                      backgroundColor: darkMode ? '#050a05' : '#f1f5f9',
+                                    }}
+                                  >
+                                    <pre style={{ margin: 0, padding: '12px', width: 'max-content', minWidth: '100%', whiteSpace: 'pre', fontSize: '12px', lineHeight: '1.6' }}>
+                                      {children}
+                                    </pre>
+                                  </div>
+                                ),
+                                code: ({ node, children, ...props }) => {
+                                  const isInline = node?.position?.start.line === node?.position?.end.line;
+                                  return isInline ? (
+                                    <code
+                                      style={{
+                                        padding: '2px 6px',
+                                        borderRadius: '4px',
+                                        fontSize: '12px',
+                                        backgroundColor: darkMode ? 'rgba(20,83,45,0.4)' : '#f1f5f9',
+                                        color: darkMode ? '#86efac' : '#334155',
+                                      }}
+                                      {...props}
+                                    >
+                                      {children}
+                                    </code>
+                                  ) : (
+                                    <code style={{ fontSize: '12px', color: darkMode ? '#86efac' : '#1e293b' }} {...props}>
+                                      {children}
+                                    </code>
+                                  );
+                                },
+                              }}
+                            >
+                              {message.text}
+                            </ReactMarkdown>
+                          </div>
+                        )}
                         <div
                           className={`text-xs mt-2 ${
                             message.sender === "user"
