@@ -258,441 +258,354 @@ export default function ChatInterfaceClient() {
     return `🔍 Complexity: ${data.complexity}\n\n${data.optimizationSuggestions}`;
   };
 
+  // The HEADER_H constant drives the top padding of the scroll area so
+  // content never hides behind the fixed header.
+  const HEADER_H = 56;
+
   return (
-    <div className={`min-h-screen relative overflow-x-hidden ${darkMode ? 'bg-[#0a0f0a]' : 'bg-[#f8faf8]'}`}>
+    // Outermost shell — just a background, no overflow tricks
+    <div style={{ minHeight: '100vh', backgroundColor: darkMode ? '#0a0f0a' : '#f8faf8' }}>
       <AnimatedGrid darkMode={darkMode} />
 
+      {/* ── SIDEBAR OVERLAY ── */}
       <AnimatePresence>
         {isSidebarOpen && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={() => setIsSidebarOpen(false)}
-            className="fixed inset-0 bg-black/30 dark:bg-black/50 backdrop-blur-sm z-40"
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 40 }}
           />
         )}
       </AnimatePresence>
 
+      {/* ── SIDEBAR PANEL ── */}
       <AnimatePresence>
         {isSidebarOpen && (
           <motion.div
-            initial={{ x: -320 }}
-            animate={{ x: 0 }}
-            exit={{ x: -320 }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className={`fixed left-0 top-0 h-full w-80 backdrop-blur-xl border-r z-50 shadow-2xl ${darkMode ? 'bg-[#0f1a0f] border-green-900/40' : 'bg-white/95 border-gray-200'}`}
+            initial={{ x: -320 }} animate={{ x: 0 }} exit={{ x: -320 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            style={{
+              position: 'fixed', left: 0, top: 0, height: '100%', width: 320,
+              zIndex: 50, display: 'flex', flexDirection: 'column',
+              backgroundColor: darkMode ? '#0f1a0f' : '#ffffff',
+              borderRight: darkMode ? '1px solid rgba(20,83,45,0.4)' : '1px solid #e5e7eb',
+              boxShadow: '4px 0 24px rgba(0,0,0,0.3)',
+            }}
           >
-            <div className="flex flex-col h-full">
-              <div className={`flex items-center justify-between p-6 border-b ${darkMode ? 'border-green-900/40' : 'border-gray-200'}`}>
-                <div className="flex items-center gap-3">
-                  <img
-                    src="/smart gauge.png"
-                    alt="Smart Gauge Logo"
-                    className="w-10 h-10 object-contain"
-                  />
-                  <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    Smart Gauge
-                  </h2>
-                </div>
-                <button
-                  onClick={() => setIsSidebarOpen(false)}
-                  className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-green-950/40 text-green-200/40' : 'hover:bg-gray-100 text-gray-600'}`}
-                >
-                  <X className="w-5 h-5" />
-                </button>
+            {/* Sidebar header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px', borderBottom: darkMode ? '1px solid rgba(20,83,45,0.4)' : '1px solid #e5e7eb' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <img src="/smart gauge.png" alt="Smart Gauge Logo" style={{ width: 40, height: 40, objectFit: 'contain' }} />
+                <span style={{ fontSize: 20, fontWeight: 700, color: darkMode ? '#ffffff' : '#111827' }}>Smart Gauge</span>
               </div>
+              <button onClick={() => setIsSidebarOpen(false)} style={{ padding: 8, borderRadius: 8, background: 'none', border: 'none', cursor: 'pointer', color: darkMode ? '#86efac' : '#4b5563' }}>
+                <X size={20} />
+              </button>
+            </div>
 
-              <div className="p-4">
-                <button
-                  onClick={handleNewChat}
-                  className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-medium rounded-lg transition-all duration-200 shadow-lg"
-                >
-                  <Plus className="w-5 h-5" />
-                  <span>New Chat</span>
-                </button>
+            {/* New chat */}
+            <div style={{ padding: 16 }}>
+              <button onClick={handleNewChat} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'linear-gradient(to right, #16a34a, #059669)', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 14 }}>
+                <Plus size={18} /> New Chat
+              </button>
+            </div>
+
+            {/* Gas prices */}
+            <div style={{ flex: 1, padding: '0 16px 16px', borderTop: darkMode ? '1px solid rgba(20,83,45,0.4)' : '1px solid #e5e7eb', paddingTop: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <Zap size={14} color="#eab308" />
+                <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: darkMode ? 'rgba(187,247,208,0.5)' : '#6b7280' }}>Gas Prices</span>
               </div>
-
-              <div className={`flex-1 px-4 py-4 border-t ${darkMode ? 'border-green-900/40' : 'border-gray-200'}`}>
-                <div className="flex items-center gap-2 mb-3">
-                  <Zap className="w-4 h-4 text-yellow-500" />
-                  <div className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-green-200/40' : 'text-gray-500'}`}>
-                    Gas Prices for Chains
-                  </div>
+              {gasData.map((chain) => (
+                <div key={chain.chainName} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', borderRadius: 8, marginBottom: 8, backgroundColor: darkMode ? '#0a140a' : '#f9fafb' }}>
+                  <span style={{ fontSize: 12, color: darkMode ? 'rgba(187,247,208,0.5)' : '#374151' }}>{chain.chainName}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: darkMode ? '#4ade80' : '#16a34a' }}>{chain.gasPrice.toFixed(2)} GWEI</span>
                 </div>
-                <div className="space-y-2">
-                  {gasData.map((chain) => (
-                    <div
-                      key={chain.chainName}
-                      className={`flex items-center justify-between px-3 py-2 rounded-lg ${darkMode ? 'bg-[#0a140a]' : 'bg-gray-50'}`}
-                    >
-                      <span className={`text-xs font-medium ${darkMode ? 'text-green-200/40' : 'text-gray-700'}`}>
-                        {chain.chainName}
-                      </span>
-                      <span className={`text-xs font-bold ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
-                        {chain.gasPrice.toFixed(2)} GWEI
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              ))}
+            </div>
 
-              <div className={`border-t ${darkMode ? 'border-green-900/40' : 'border-gray-200'} p-4 space-y-2`}>
-                {loggedUser ? (
-                  <>
-                    <div className={`text-xs ${darkMode ? 'text-green-200/40' : 'text-gray-500'}`}>
-                      Signed in as <span className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{loggedUser.username}</span>
-                    </div>
-                    <Link href="/profile" onClick={() => setIsSidebarOpen(false)}>
-                      <button className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${darkMode ? 'text-green-200/40 hover:bg-green-950/40 hover:text-green-300' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'}`}>
-                        <User className="w-5 h-5" />
-                        <span>Profile</span>
-                      </button>
-                    </Link>
-                    <Link href="/settings" onClick={() => setIsSidebarOpen(false)}>
-                      <button className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${darkMode ? 'text-green-200/40 hover:bg-green-950/40 hover:text-green-300' : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'}`}>
-                        <Settings className="w-5 h-5" />
-                        <span>Settings</span>
-                      </button>
-                    </Link>
-                    <button onClick={() => { handleLogout(); setIsSidebarOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${darkMode ? 'text-red-400 hover:bg-red-950/30' : 'text-gray-700 hover:bg-red-50 hover:text-red-600'}`}>
-                      <LogOut className="w-5 h-5" />
-                      <span>Sign out</span>
+            {/* Account footer */}
+            <div style={{ borderTop: darkMode ? '1px solid rgba(20,83,45,0.4)' : '1px solid #e5e7eb', padding: 16 }}>
+              {loggedUser ? (
+                <>
+                  <p style={{ fontSize: 12, color: darkMode ? 'rgba(187,247,208,0.5)' : '#6b7280', marginBottom: 8 }}>
+                    Signed in as <strong style={{ color: darkMode ? '#fff' : '#111827' }}>{loggedUser.username}</strong>
+                  </p>
+                  <Link href="/profile" onClick={() => setIsSidebarOpen(false)}>
+                    <button style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', background: 'none', border: 'none', borderRadius: 8, cursor: 'pointer', color: darkMode ? 'rgba(187,247,208,0.6)' : '#374151', fontSize: 14, marginBottom: 4 }}>
+                      <User size={18} /> Profile
                     </button>
-                  </>
-                ) : (
-                  <>
-                    <div className={`text-sm mb-2 ${darkMode ? 'text-green-200/40' : 'text-gray-500'}`}>
-                      Sign in to access account shortcuts
-                    </div>
-                    <Link href="/landing/login" onClick={() => setIsSidebarOpen(false)}>
-                      <button className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all">
-                        <User className="w-5 h-5" />
-                        <span>Login</span>
-                      </button>
-                    </Link>
-                  </>
-                )}
-              </div>
+                  </Link>
+                  <Link href="/settings" onClick={() => setIsSidebarOpen(false)}>
+                    <button style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', background: 'none', border: 'none', borderRadius: 8, cursor: 'pointer', color: darkMode ? 'rgba(187,247,208,0.6)' : '#374151', fontSize: 14, marginBottom: 4 }}>
+                      <Settings size={18} /> Settings
+                    </button>
+                  </Link>
+                  <button onClick={() => { handleLogout(); setIsSidebarOpen(false); }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', background: 'none', border: 'none', borderRadius: 8, cursor: 'pointer', color: '#f87171', fontSize: 14 }}>
+                    <LogOut size={18} /> Sign out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p style={{ fontSize: 13, color: darkMode ? 'rgba(187,247,208,0.5)' : '#6b7280', marginBottom: 12 }}>Sign in to access account shortcuts</p>
+                  <Link href="/landing/login" onClick={() => setIsSidebarOpen(false)}>
+                    <button style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '10px 16px', background: 'linear-gradient(to right, #16a34a, #059669)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 14 }}>
+                      <User size={18} /> Login
+                    </button>
+                  </Link>
+                </>
+              )}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Main Content */}
-      <div className="relative z-10 flex flex-col" style={{ height: '100dvh' }}>
+      {/* ── FIXED HEADER — position:fixed so it is ALWAYS on screen regardless of any parent overflow ── */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: HEADER_H,
+          zIndex: 20,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingLeft: 12,
+          paddingRight: 12,
+          backgroundColor: darkMode ? '#0a0f0a' : '#f8faf8',
+          borderBottom: darkMode ? '1px solid rgba(20,83,45,0.4)' : '1px solid #e5e7eb',
+        }}
+      >
+        {/* Left: menu + dark mode */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            aria-label="Open sidebar"
+            style={{ padding: 8, borderRadius: 8, background: 'none', border: 'none', cursor: 'pointer', color: darkMode ? '#86efac' : '#374151', display: 'flex', alignItems: 'center' }}
+          >
+            <Menu size={22} />
+          </button>
+          <button
+            onClick={toggleDarkMode}
+            aria-label="Toggle dark mode"
+            style={{ padding: 8, borderRadius: 8, background: 'none', border: 'none', cursor: 'pointer', color: darkMode ? '#4ade80' : '#374151', display: 'flex', alignItems: 'center' }}
+          >
+            {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+        </div>
 
-        <header
-          style={{
-            position: 'sticky',
-            top: 0,
-            zIndex: 30,
-            flexShrink: 0,
-            borderBottom: darkMode ? '1px solid rgba(20,83,45,0.4)' : '1px solid #e5e7eb',
-            backgroundColor: darkMode ? '#0a0f0a' : '#f8faf8',
-          }}
-        >
-          <div className="w-full px-3 sm:px-6 lg:px-8 flex items-center justify-between" style={{ minHeight: '56px', paddingTop: '12px', paddingBottom: '12px' }}>
-            {/* Left controls */}
-            <div className="flex items-center gap-1 sm:gap-2">
-              <button
-                onClick={() => setIsSidebarOpen(true)}
-                className={`p-2 rounded-lg transition-colors ${
-                  darkMode
-                    ? 'hover:bg-green-950/40 text-green-300'
-                    : 'hover:bg-gray-100 text-gray-700'
-                }`}
-                aria-label="Open sidebar"
-              >
-                <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
-              </button>
+        {/* Centre: logo + name */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <img src="/smart gauge.png" alt="Smart Gauge Logo" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+          <span style={{ fontSize: 17, fontWeight: 700, color: darkMode ? '#ffffff' : '#111827' }}>Smart Gauge</span>
+        </div>
 
-              <button
-                onClick={toggleDarkMode}
-                className={`p-2 rounded-lg transition-colors ${
-                  darkMode
-                    ? 'hover:bg-green-950/40 text-green-400'
-                    : 'hover:bg-gray-100 text-gray-700'
-                }`}
-                aria-label="Toggle dark mode"
-              >
-                {darkMode ? <Sun className="w-4 h-4 sm:w-5 sm:h-5" /> : <Moon className="w-4 h-4 sm:w-5 sm:h-5" />}
-              </button>
-            </div>
+        {/* Right spacer to keep centre truly centred */}
+        <div style={{ width: 80 }} />
+      </div>
 
-            {/* Centre branding */}
-            <div className="flex items-center gap-2">
-              <img
-                src="/smart gauge.png"
-                alt="Smart Gauge Logo"
-                className="w-7 h-7 sm:w-8 sm:h-8 object-contain"
-              />
-              <h1 className={`text-base sm:text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                Smart Gauge
-              </h1>
-            </div>
-
-            {/* Right spacer — mirrors left side width so title stays centred */}
-            <div className="w-[72px] sm:w-[88px]" />
-          </div>
-        </header>
-
-        <div className="flex-1 overflow-hidden flex flex-col relative">
-          {messages.length === 0 && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="opacity-[0.03] dark:opacity-5">
-                <MessageSquare className="w-64 h-64 text-slate-900 dark:text-white" />
+      {/* ── BODY — padded top by header height so nothing hides behind it ── */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 10,
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100vh',
+          paddingTop: HEADER_H,
+        }}
+      >
+        {/* Messages scroll area */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '24px 16px' }}>
+          <div style={{ maxWidth: 768, margin: '0 auto' }}>
+            {messages.length === 0 ? (
+              <div style={{ textAlign: 'center', paddingTop: 80 }}>
+                <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 12, color: darkMode ? '#ffffff' : '#111827' }}>
+                  Welcome to Smart Gauge
+                </h2>
+                <p style={{ fontSize: 16, color: darkMode ? 'rgba(187,247,208,0.4)' : '#9ca3af' }}>
+                  Paste in your Solidity smart contract and let AI do the magic
+                </p>
               </div>
-            </div>
-          )}
-
-          <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="max-w-4xl mx-auto space-y-6">
-              {messages.length === 0 ? (
-                <div className="text-center py-12">
-                  <h2 className={`text-3xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    Welcome to Smart Gauge
-                  </h2>
-                  <p className={`text-lg ${darkMode ? 'text-green-200/40' : 'text-gray-400'}`}>
-                    Paste in your solidity smart contract and let AI do the magic
-                  </p>
-                </div>
-              ) : (
-                messages.map((message) => (
-                  <motion.div
-                    key={message.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
-                  >
-                    <div className="relative group max-w-[85%] sm:max-w-[80%]">
-                      <div
-                        className={`rounded-2xl px-4 sm:px-6 py-4 ${
-                          message.sender === "user"
-                            ? "bg-gradient-to-br from-green-600 to-emerald-600 text-white"
-                            : `${darkMode ? 'bg-[#0f1a0f] border border-green-900/40 text-green-200' : 'bg-white border border-gray-200 text-gray-900'}`
-                        }`}
-                      >
-                        {message.sender === "user" ? (
-                          /* User bubble: plain text only, no markdown parsing */
-                          <p className="text-sm sm:text-base whitespace-pre-wrap break-words">
-                            {message.text}
-                          </p>
-                        ) : (
-                          /* AI bubble: full markdown with scrollable code blocks */
-                          <div className="text-sm sm:text-base prose prose-sm dark:prose-invert max-w-none
-                            break-words
-                            prose-headings:font-bold prose-headings:mb-2
-                            prose-p:mb-2 prose-p:leading-relaxed
-                            prose-ul:my-2 prose-ul:list-disc prose-ul:pl-4
-                            prose-ol:my-2 prose-ol:list-decimal prose-ol:pl-4
-                            prose-li:mb-1
-                            prose-code:bg-slate-100 prose-code:dark:bg-slate-700 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs
-                            prose-strong:font-semibold">
-                            <ReactMarkdown
-                              components={{
-                                pre: ({ children }) => (
-                                  <div
-                                    style={{
-                                      overflowX: 'auto',
-                                      WebkitOverflowScrolling: 'touch',
-                                      borderRadius: '12px',
-                                      margin: '12px 0',
-                                      border: darkMode ? '1px solid rgba(20,83,45,0.5)' : '1px solid #e2e8f0',
-                                      backgroundColor: darkMode ? '#050a05' : '#f1f5f9',
-                                    }}
-                                  >
-                                    <pre style={{ margin: 0, padding: '12px', width: 'max-content', minWidth: '100%', whiteSpace: 'pre', fontSize: '12px', lineHeight: '1.6' }}>
-                                      {children}
-                                    </pre>
-                                  </div>
-                                ),
-                                code: ({ node, children, ...props }) => {
-                                  const isInline = node?.position?.start.line === node?.position?.end.line;
-                                  return isInline ? (
-                                    <code
-                                      style={{
-                                        padding: '2px 6px',
-                                        borderRadius: '4px',
-                                        fontSize: '12px',
-                                        backgroundColor: darkMode ? 'rgba(20,83,45,0.4)' : '#f1f5f9',
-                                        color: darkMode ? '#86efac' : '#334155',
-                                      }}
-                                      {...props}
-                                    >
-                                      {children}
-                                    </code>
-                                  ) : (
-                                    <code style={{ fontSize: '12px', color: darkMode ? '#86efac' : '#1e293b' }} {...props}>
-                                      {children}
-                                    </code>
-                                  );
-                                },
-                              }}
-                            >
-                              {message.text}
-                            </ReactMarkdown>
-                          </div>
-                        )}
-                        <div
-                          className={`text-xs mt-2 ${
-                            message.sender === "user"
-                              ? "text-green-100"
-                              : darkMode ? "text-green-900" : "text-gray-400"
-                          }`}
-                        >
-                          {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                        </div>
-                      </div>
-
-                      {/* FIX 2 (copy button): Kept always-visible on mobile (opacity-100) and
-                          hover-visible on desktop. Positioned outside the bubble flow so it never
-                          overlaps bubble text. */}
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(message.text);
-                          setCopiedId(message.id);
-                          setTimeout(() => setCopiedId(null), 2000);
-                        }}
-                        className={`absolute -bottom-3 ${
-                          message.sender === "user" ? "right-2" : "left-2"
-                        } opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200
-                        flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium shadow-md z-10
-                        ${
-                          message.sender === "user"
-                            ? "bg-green-700 text-green-100 hover:bg-green-800"
-                            : darkMode
-                              ? "bg-[#0f1a0f] border border-green-900/40 text-green-200/40 hover:bg-green-950/40"
-                              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
-                      >
-                        {copiedId === message.id ? (
-                          <><Check className="w-3 h-3" />Copied</>
-                        ) : (
-                          <><Copy className="w-3 h-3" />Copy</>
-                        )}
-                      </button>
-                    </div>
-                  </motion.div>
-                ))
-              )}
-
-              {isTyping && (
+            ) : (
+              messages.map((message) => (
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
+                  key={message.id}
+                  initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex justify-start"
+                  style={{ display: 'flex', justifyContent: message.sender === 'user' ? 'flex-end' : 'flex-start', marginBottom: 24 }}
                 >
-                  <div className={`rounded-2xl px-6 py-4 border ${darkMode ? 'bg-[#0a140a] border-green-900/40 text-green-300' : 'bg-white border-gray-200 text-gray-800'}`}>
-                    <div className="flex gap-2">
-                      <div className={`${darkMode ? 'bg-green-400' : 'bg-slate-500'} w-2 h-2 rounded-full animate-bounce`}></div>
-                      <div className={`${darkMode ? 'bg-green-400' : 'bg-slate-500'} w-2 h-2 rounded-full animate-bounce animation-delay-200`}></div>
-                      <div className={`${darkMode ? 'bg-green-400' : 'bg-slate-500'} w-2 h-2 rounded-full animate-bounce animation-delay-400`}></div>
+                  <div style={{ position: 'relative', maxWidth: '82%' }} className="group">
+                    <div
+                      style={{
+                        borderRadius: 20,
+                        padding: '12px 18px',
+                        background: message.sender === 'user'
+                          ? 'linear-gradient(135deg, #16a34a, #059669)'
+                          : darkMode ? '#0f1a0f' : '#ffffff',
+                        border: message.sender === 'user' ? 'none' : darkMode ? '1px solid rgba(20,83,45,0.5)' : '1px solid #e5e7eb',
+                        color: message.sender === 'user' ? '#ffffff' : darkMode ? '#bbf7d0' : '#111827',
+                      }}
+                    >
+                      {message.sender === 'user' ? (
+                        /* Plain text — no markdown, no formatting mangling */
+                        <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                          {message.text}
+                        </p>
+                      ) : (
+                        /* AI response — full markdown + scrollable code blocks */
+                        <div className="prose prose-sm dark:prose-invert max-w-none break-words
+                          prose-headings:font-bold prose-headings:mb-2
+                          prose-p:mb-2 prose-p:leading-relaxed prose-p:text-sm
+                          prose-ul:my-2 prose-ul:list-disc prose-ul:pl-4
+                          prose-ol:my-2 prose-ol:list-decimal prose-ol:pl-4
+                          prose-li:mb-1 prose-li:text-sm
+                          prose-strong:font-semibold">
+                          <ReactMarkdown
+                            components={{
+                              pre: ({ children }) => (
+                                <div style={{
+                                  overflowX: 'auto',
+                                  WebkitOverflowScrolling: 'touch',
+                                  borderRadius: 10,
+                                  margin: '10px 0',
+                                  backgroundColor: darkMode ? '#050a05' : '#f1f5f9',
+                                  border: darkMode ? '1px solid rgba(20,83,45,0.5)' : '1px solid #e2e8f0',
+                                }}>
+                                  <pre style={{ margin: 0, padding: 12, width: 'max-content', minWidth: '100%', whiteSpace: 'pre', fontSize: 12, lineHeight: 1.6, color: darkMode ? '#86efac' : '#1e293b' }}>
+                                    {children}
+                                  </pre>
+                                </div>
+                              ),
+                              code: ({ node, children, ...props }) => {
+                                const isInline = node?.position?.start.line === node?.position?.end.line;
+                                return isInline ? (
+                                  <code style={{ padding: '2px 5px', borderRadius: 4, fontSize: 12, backgroundColor: darkMode ? 'rgba(20,83,45,0.4)' : '#f1f5f9', color: darkMode ? '#86efac' : '#334155' }} {...props}>{children}</code>
+                                ) : (
+                                  <code style={{ fontSize: 12, color: darkMode ? '#86efac' : '#1e293b' }} {...props}>{children}</code>
+                                );
+                              },
+                            }}
+                          >
+                            {message.text}
+                          </ReactMarkdown>
+                        </div>
+                      )}
+                      <p style={{ margin: '6px 0 0', fontSize: 11, color: message.sender === 'user' ? 'rgba(255,255,255,0.6)' : darkMode ? 'rgba(20,83,45,0.8)' : '#9ca3af' }}>
+                        {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </p>
                     </div>
+
+                    {/* Copy button */}
+                    <button
+                      onClick={() => { navigator.clipboard.writeText(message.text); setCopiedId(message.id); setTimeout(() => setCopiedId(null), 2000); }}
+                      style={{
+                        position: 'absolute',
+                        bottom: -10,
+                        [message.sender === 'user' ? 'right' : 'left']: 8,
+                        display: 'flex', alignItems: 'center', gap: 4,
+                        padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 500,
+                        border: 'none', cursor: 'pointer',
+                        backgroundColor: message.sender === 'user' ? '#15803d' : darkMode ? '#0f1a0f' : '#f3f4f6',
+                        color: message.sender === 'user' ? '#dcfce7' : darkMode ? 'rgba(187,247,208,0.5)' : '#4b5563',
+                        boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+                      }}
+                      className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                    >
+                      {copiedId === message.id ? <><Check size={11} />Copied</> : <><Copy size={11} />Copy</>}
+                    </button>
                   </div>
                 </motion.div>
-              )}
+              ))
+            )}
 
-              <div ref={messagesEndRef} />
-            </div>
-          </div>
-
-          {/* Input area */}
-          <div className="flex-shrink-0 backdrop-blur-sm">
-            <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4">
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-                <div className="relative dark:bg-slate-800/50 rounded-2xl shadow-lg p-3 sm:p-4 transition-all duration-300">
-                  <label className={`block text-xs sm:text-sm font-medium mb-2 sm:mb-3 ${darkMode ? 'text-gray-400' : 'text-slate-600'}`}>
-                    Paste in your smart contract and AI does the magic:
-                  </label>
-
-                  <div className="relative">
-                    <div
-                      className={`absolute inset-0 rounded-2xl pointer-events-none transition-opacity duration-500 ${
-                        isTyping
-                          ? "opacity-100 animate-pulse bg-gradient-to-r from-green-500/10 via-emerald-500/10 to-green-500/10"
-                          : "opacity-0"
-                      }`}
-                    />
-
-                    {/* FIX 2: Changed overflow-hidden → overflow-y-auto so text scrolls rather than
-                        clips. Added word-break: break-all via style so extremely long unspaced
-                        strings (contract code) wrap instead of widening the textarea. Adjusted
-                        padding-right to leave room for the button column without being excessive. */}
-                    <textarea
-                      ref={textareaRef}
-                      value={inputValue}
-                      onChange={(e) => setInputValue(e.target.value)}
-                      placeholder="pragma solidity..."
-                      rows={4}
-                      style={{ wordBreak: 'break-all' }}
-                      className={`relative w-full min-h-[100px] max-h-64 pl-3 sm:pl-4 pr-28 sm:pr-32 py-3 rounded-2xl
-                        bg-gradient-to-br from-primaryDark/40 via-primary/30 to-primaryLight/40
-                        backdrop-blur-md resize-none overflow-y-auto text-sm sm:text-base
-                        transition-all duration-300 focus:outline-none
-                        shadow-[8px_8px_18px_rgba(0,0,0,0.35),_-8px_-8px_18px_rgba(255,255,255,0.15)]
-                        focus:shadow-[inset_6px_6px_14px_rgba(0,0,0,0.4),_inset_-6px_-6px_14px_rgba(255,255,255,0.15)]
-                        ${darkMode ? 'text-white placeholder-gray-400' : 'text-surfaceDark placeholder-surfaceShadow'}
-                      `}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && e.metaKey) {
-                          handleSend();
-                        }
-                      }}
-                    />
-
-                    {/* Button cluster — absolutely positioned so it never pushes textarea wider */}
-                    <div className="absolute bottom-3 right-3 flex items-center gap-1 sm:gap-2">
-                      <div className="relative group">
-                        <button
-                          disabled
-                          onMouseEnter={() => setShowTooltip("clip")}
-                          onMouseLeave={() => setShowTooltip(null)}
-                          className="p-1.5 sm:p-2 rounded-full bg-slate-200 dark:bg-slate-700/50 opacity-50 cursor-not-allowed"
-                        >
-                          <Paperclip className="w-4 h-4 text-slate-500 dark:text-gray-400" />
-                        </button>
-                        {showTooltip === "clip" && (
-                          <div className="absolute bottom-12 right-0 bg-slate-900 dark:bg-black text-white text-xs px-3 py-1.5 rounded-md shadow-lg whitespace-nowrap">
-                            Coming soon
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="relative group">
-                        <button
-                          disabled
-                          onMouseEnter={() => setShowTooltip("mic")}
-                          onMouseLeave={() => setShowTooltip(null)}
-                          className={`p-1.5 sm:p-2 rounded-full ${darkMode ? 'bg-green-950/40' : 'bg-slate-200'} opacity-50 cursor-not-allowed`}
-                        >
-                          <Mic className={`w-4 h-4 ${darkMode ? 'text-green-200/40' : 'text-slate-500'}`} />
-                        </button>
-                        {showTooltip === "mic" && (
-                          <div className="absolute bottom-12 right-0 bg-slate-900 dark:bg-black text-white text-xs px-3 py-1.5 rounded-md shadow-lg whitespace-nowrap">
-                            Coming soon
-                          </div>
-                        )}
-                      </div>
-
-                      <motion.button
-                        onClick={handleSend}
-                        whileHover={{ scale: inputValue.trim() ? 1.07 : 1 }}
-                        whileTap={{ scale: inputValue.trim() ? 0.95 : 1 }}
-                        disabled={!inputValue.trim()}
-                        className={`relative p-1.5 sm:p-2 rounded-full transition-all duration-300 ${
-                          inputValue.trim()
-                            ? 'bg-gradient-to-r from-green-600 to-emerald-600 ring-2 ring-green-400/60 shadow-[0_0_20px_rgba(34,197,94,0.6)]'
-                            : 'bg-slate-400 dark:bg-green-950/30 opacity-50 cursor-not-allowed'
-                        }`}
-                      >
-                        <Send className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                      </motion.button>
-                    </div>
+            {isTyping && (
+              <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 24 }}>
+                <div style={{ borderRadius: 20, padding: '14px 20px', backgroundColor: darkMode ? '#0a140a' : '#ffffff', border: darkMode ? '1px solid rgba(20,83,45,0.5)' : '1px solid #e5e7eb' }}>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    {[0, 1, 2].map((i) => (
+                      <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: darkMode ? '#4ade80' : '#64748b', animation: `bounce 1s ${i * 0.15}s infinite` }} className="animate-bounce" />
+                    ))}
                   </div>
                 </div>
               </motion.div>
-            </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+        </div>
+
+        {/* ── INPUT AREA ── */}
+        <div style={{ flexShrink: 0, padding: '12px 16px 16px', backgroundColor: darkMode ? '#0a0f0a' : '#f8faf8' }}>
+          <div style={{ maxWidth: 768, margin: '0 auto' }}>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+              <div style={{ borderRadius: 20, padding: '12px 16px', boxShadow: '0 4px 24px rgba(0,0,0,0.15)', backgroundColor: darkMode ? '#0f1a0f' : '#ffffff', border: darkMode ? '1px solid rgba(20,83,45,0.4)' : '1px solid #e5e7eb' }}>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 500, marginBottom: 10, color: darkMode ? '#6b7280' : '#64748b' }}>
+                  Paste in your smart contract and AI does the magic:
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <div
+                    style={{
+                      position: 'absolute', inset: 0, borderRadius: 16, pointerEvents: 'none',
+                      opacity: isTyping ? 1 : 0, transition: 'opacity 0.5s',
+                      background: 'linear-gradient(to right, rgba(34,197,94,0.08), rgba(52,211,153,0.08), rgba(34,197,94,0.08))',
+                    }}
+                  />
+                  <textarea
+                    ref={textareaRef}
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    placeholder="pragma solidity..."
+                    rows={4}
+                    onKeyDown={(e) => { if (e.key === 'Enter' && e.metaKey) handleSend(); }}
+                    style={{
+                      width: '100%',
+                      minHeight: 100,
+                      maxHeight: 240,
+                      paddingLeft: 14,
+                      paddingRight: 120,
+                      paddingTop: 12,
+                      paddingBottom: 12,
+                      borderRadius: 16,
+                      resize: 'none',
+                      overflowY: 'auto',
+                      fontSize: 14,
+                      lineHeight: 1.6,
+                      outline: 'none',
+                      border: darkMode ? '1px solid rgba(20,83,45,0.3)' : '1px solid #e2e8f0',
+                      backgroundColor: darkMode ? '#0a140a' : '#f8fafc',
+                      color: darkMode ? '#ffffff' : '#1e293b',
+                      wordBreak: 'break-word',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                  <div style={{ position: 'absolute', bottom: 10, right: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <button disabled style={{ padding: 7, borderRadius: '50%', background: darkMode ? 'rgba(20,83,45,0.2)' : '#f1f5f9', border: 'none', opacity: 0.5, cursor: 'not-allowed', display: 'flex' }}>
+                      <Paperclip size={16} color={darkMode ? '#86efac' : '#64748b'} />
+                    </button>
+                    <button disabled style={{ padding: 7, borderRadius: '50%', background: darkMode ? 'rgba(20,83,45,0.2)' : '#f1f5f9', border: 'none', opacity: 0.5, cursor: 'not-allowed', display: 'flex' }}>
+                      <Mic size={16} color={darkMode ? '#86efac' : '#64748b'} />
+                    </button>
+                    <motion.button
+                      onClick={handleSend}
+                      disabled={!inputValue.trim()}
+                      whileHover={{ scale: inputValue.trim() ? 1.07 : 1 }}
+                      whileTap={{ scale: inputValue.trim() ? 0.95 : 1 }}
+                      style={{
+                        padding: 8, borderRadius: '50%', border: 'none', cursor: inputValue.trim() ? 'pointer' : 'not-allowed',
+                        background: inputValue.trim() ? 'linear-gradient(135deg, #16a34a, #059669)' : '#94a3b8',
+                        opacity: inputValue.trim() ? 1 : 0.5,
+                        boxShadow: inputValue.trim() ? '0 0 16px rgba(34,197,94,0.5)' : 'none',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}
+                    >
+                      <Send size={18} color="#fff" />
+                    </motion.button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </div>
