@@ -16,15 +16,16 @@ export interface Reason {
 export const reasons: Reason[] = [
  {
       "id": 1,
-      "category": "Early Life",
-      "reason": "Peter Obi was born on July 19, 1961 in Onitsha, one of Nigeria's most important commercial cities, giving him a deep understanding of trade, commerce and economic life from childhood.",
-      "source": "https://en.wikipedia.org/wiki/Peter_Obi"
+      "category": "Education",
+      "reason": "He received certificates in the Senior Executive Program and Chief Executive Officers Program at the International Institute for Management Development in Switzerland.",
+      "source": "https://labourparty.com.ng/peter-gregory-obi/"
+      
     },
     {
       "id": 2,
-      "category": "Early Life",
-      "reason": "He grew up in a devout Christian family that strongly emphasized values of honesty, humility, and hard work — values he carried directly into public office.",
-      "source": "https://novaline.com.ng/peter-obi-biography/"
+     "category": "Political Integrity",
+      "reason": "The PDP filed 425 witnesses in the case against him as a deliberate delaying tactic. He outlasted all of them in court. That level of patience and persistence is not something most Nigerian politicians would even attempt.",
+      "source": "https://www.samuelmarete.com/2023/02/24/the-incredible-candidacy-of-peter-obi/"
     },
     {
       "id": 3,
@@ -82,9 +83,9 @@ export const reasons: Reason[] = [
     },
     {
       "id": 12,
-      "category": "Education",
-      "reason": "He received certificates in the Senior Executive Program and Chief Executive Officers Program at the International Institute for Management Development in Switzerland.",
-      "source": "https://labourparty.com.ng/peter-gregory-obi/"
+      "category": "Early Life",
+      "reason": "Peter Obi was born on July 19, 1961 in Onitsha, one of Nigeria's most important commercial cities, giving him a deep understanding of trade, commerce and economic life from childhood.",
+      "source": "https://en.wikipedia.org/wiki/Peter_Obi"
     },
     {
       "id": 13,
@@ -124,9 +125,11 @@ export const reasons: Reason[] = [
     },
     {
       "id": 19,
-      "category": "Political Integrity",
-      "reason": "The PDP filed 425 witnesses in the case against him as a deliberate delaying tactic. He outlasted all of them in court. That level of patience and persistence is not something most Nigerian politicians would even attempt.",
-      "source": "https://www.samuelmarete.com/2023/02/24/the-incredible-candidacy-of-peter-obi/"
+
+      "category": "Early Life",
+      "reason": "He grew up in a devout Christian family that strongly emphasized values of honesty, humility, and hard work — values he carried directly into public office.",
+      "source": "https://novaline.com.ng/peter-obi-biography/"
+  
     },
     {
       "id": 20,
