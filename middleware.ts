@@ -6,12 +6,7 @@ export async function middleware(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
 
   // redirect logic
-  if (pathname === "/") {
-    return NextResponse.redirect(
-      new URL(token ? "/home" : "/landing", req.url)
-    )
-  }
-
+ 
   const res = NextResponse.next()
 
   // add security headers
@@ -21,7 +16,7 @@ export async function middleware(req: NextRequest) {
   res.headers.set("X-XSS-Protection", "1; mode=block")
   res.headers.set(
     "Content-Security-Policy",
-    "default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self';"
+    "default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com; connect-src 'self' https://www.google-analytics.com;"
   )
 
   // CORS for API only

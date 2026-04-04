@@ -1,24 +1,20 @@
-{
-  "subject": "Peter Gregory Obi",
-  "description": "100 sourced reasons why a Nigerian voter should vote Peter Obi, plus 50 good works without sources",
-  "sources_used": [
-    "https://en.wikipedia.org/wiki/Peter_Obi",
-    "https://www.vanguardngr.com/2018/10/peter-obi-a-complete-profile/",
-    "https://dnbstories.com/2022/06/list-of-peter-obis-achievements-in-anambra-as-governor.html",
-    "https://www.legit.ng/nigeria/1498135-18-major-achievements-peter-obi-melt-hearts/",
-    "https://www.samuelmarete.com/2023/02/24/the-incredible-candidacy-of-peter-obi/",
-    "https://blackgeeks.com.ng/5-biggest-achievements-of-peter-obi-as-anambra-state-governor/",
-    "https://labourparty.com.ng/peter-gregory-obi/",
-    "https://globalpeace.org/speaker/mr-peter-gregory-obi/",
-    "https://allafrica.com/stories/202601060348.html",
-    "https://thisdaylive.com/index.php/2022/10/16/thoughts-on-peter-obis-biography",
-    "https://biography.igbopeople.org/biography/peter-obi/",
-    "https://kashgain.net/blog/peter-obi-biography-family-networth-and-political-career/",
-    "https://novaline.com.ng/peter-obi-biography/",
-    "https://www.opinionnigeria.com/why-nigerians-must-trust-peter-obi-for-2027-a-vision-for-prosperity-and-good-governance-by-jeff-okoroafor/"
-  ],
-  "sourced_reasons": [
-    {
+// /data/reasons.ts
+// ─────────────────────────────────────────────────────────────────────────────
+// DROP YOUR JSON ARRAY HERE.
+// Each object must match the Reason interface below.
+// The app handles 1 – 1000+ entries without any other changes needed.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface Reason {
+  id: number;
+  category: string;
+  reason: string;
+  source: string;
+}
+
+// ⬇⬇⬇  Replace this sample array with your full dataset  ⬇⬇⬇
+export const reasons: Reason[] = [
+ {
       "id": 1,
       "category": "Early Life",
       "reason": "Peter Obi was born on July 19, 1961 in Onitsha, one of Nigeria's most important commercial cities, giving him a deep understanding of trade, commerce and economic life from childhood.",
@@ -917,232 +913,330 @@
       "category": "Post-2023 Period",
       "reason": "He pledged personally to pay NECO exam fees for 148 inmates across all correctional centres in Anambra State during a visit to the Nigerian Correctional Centre in Onitsha — a small, practical, personal act of dignity that costs him real money and earns him no political votes.",
       "source": "https://en.wikipedia.org/wiki/Peter_Obi"
-    }
+    },
+    {
+    "id": 160,
+    "category": "",
+    "reason": "Personally visited and inspected project sites during construction to ensure contractor accountability — an unusual practice for a Nigerian governor.",
+    "source": ""
+  },
+  {
+    "id": 161,
+    "category": "",
+    "reason": "Refused to award contracts to cronies or political loyalists, insisting on competitive and transparent procurement processes.",
+    "source": ""
+  },
+  {
+    "id": 162,
+    "category": "",
+    "reason": "Moved out of the Government House and into a hotel himself rather than spend half a billion naira building a Presidential Lodge for a one-week visit from President Obasanjo.",
+    "source": ""
+  },
+  {
+    "id": 163,
+    "category": "",
+    "reason": "Paid all outstanding contractor debts before leaving office so his successor would inherit a clean financial slate.",
+    "source": ""
+  },
+  {
+    "id": 164,
+    "category": "",
+    "reason": "Established a culture of reading and intellectual engagement in public schools through library development programs.",
+    "source": ""
+  },
+  {
+    "id": 165,
+    "category": "",
+    "reason": "Personally championed the cause of widows and vulnerable citizens within Anambra State through targeted welfare programs.",
+    "source": ""
+  },
+  {
+    "id": 166,
+    "category": "",
+    "reason": "Introduced a performance management system for civil servants that tied promotions to measurable outcomes rather than seniority alone.",
+    "source": ""
+  },
+  {
+    "id": 167,
+    "category": "",
+    "reason": "Engaged youth groups and students directly throughout his tenure, visiting campuses and listening to grievances without the usual layers of protocol.",
+    "source": ""
+  },
+  {
+    "id": 168,
+    "category": "",
+    "reason": "Consistently lived below his political status — flying economy class, staying in modest accommodations, and rejecting the culture of political extravagance.",
+    "source": ""
+  },
+  {
+    "id": 169,
+    "category": "",
+    "reason": "Ensured that WAEC and NECO examination fees were paid for indigent students across Anambra who could not afford them.",
+    "source": ""
+  },
+  {
+    "id": 170,
+    "category": "",
+    "reason": "Championed the rehabilitation of public markets and trading centres in Onitsha and Awka to support small traders and market women.",
+    "source": ""
+  },
+  {
+    "id": 171,
+    "category": "",
+    "reason": "Introduced free medical outreach programs in rural communities that were underserved by existing health infrastructure.",
+    "source": ""
+  },
+  {
+    "id": 172,
+    "category": "",
+    "reason": "Worked to reduce the cost of governance in Anambra by cutting frivolous government expenditures and trimmimg an overly bloated state budget.",
+    "source": ""
+  },
+  {
+    "id": 173,
+    "category": "",
+    "reason": "Promoted the teaching of entrepreneurship and business skills in Anambra secondary schools to prepare students for a productive life beyond certificates.",
+    "source": ""
+  },
+  {
+    "id": 174,
+    "category": "",
+    "reason": "Ensured that government contractors who failed to deliver quality work were held to bond agreements and made to repair or redo poor infrastructure.",
+    "source": ""
+  },
+  {
+    "id": 175,
+    "category": "",
+    "reason": "Implemented a transparent payroll system that eliminated ghost workers from the Anambra State Government payroll.",
+    "source": ""
+  },
+  {
+    "id": 176,
+    "category": "",
+    "reason": "Donated personal funds to the rehabilitation of schools in his community after leaving office, without publicising it as a political act.",
+    "source": ""
+  },
+  {
+    "id": 177,
+    "category": "",
+    "reason": "Regularly engaged with traditional rulers and community leaders across Anambra to resolve disputes and align governance with community priorities.",
+    "source": ""
+  },
+  {
+    "id": 178,
+    "category": "",
+    "reason": "Supported the establishment of agricultural processing zones to add value to farm produce within Anambra rather than exporting raw materials.",
+    "source": ""
+  },
+  {
+    "id": 179,
+    "category": "",
+    "reason": "Actively promoted internally generated revenue by formalising parts of the informal economy, reducing Anambra's dependence on federal allocations.",
+    "source": ""
+  },
+  {
+    "id": 180,
+    "category": "",
+    "reason": "Established skills acquisition centres across Anambra to train unemployed youth in technical and vocational trades.",
+    "source": ""
+  },
+  {
+    "id": 181,
+    "category": "",
+    "reason": "Personally negotiated with international investors to establish businesses in Anambra, presenting the state's data and governance record as its strongest pitch.",
+    "source": ""
+  },
+  {
+    "id": 182,
+    "category": "",
+    "reason": "Facilitated the establishment of cottage industries and small manufacturing businesses in rural Anambra communities.",
+    "source": ""
+  },
+  {
+    "id": 183,
+    "category": "",
+    "reason": "Created a state bursary program that supported bright students from poor families to attend secondary and tertiary education.",
+    "source": ""
+  },
+  {
+    "id": 184,
+    "category": "",
+    "reason": "Worked to reduce maternal mortality in Anambra through targeted funding of midwifery services and rural health outreach.",
+    "source": ""
+  },
+  {
+    "id": 185,
+    "category": "",
+    "reason": "Championed the digitisation of government records in Anambra to improve transparency and reduce the possibility of document manipulation.",
+    "source": ""
+  },
+  {
+    "id": 186,
+    "category": "",
+    "reason": "Helped reconstruct the state radio service and public broadcasting infrastructure that had been looted and burned before his assumption of office.",
+    "source": ""
+  },
+  {
+    "id": 187,
+    "category": "",
+    "reason": "Introduced public accountability forums where citizens could directly question government officials on project delivery.",
+    "source": ""
+  },
+  {
+    "id": 188,
+    "category": "",
+    "reason": "Supported local Anambra artisans and craft makers by creating market linkages and exhibition opportunities.",
+    "source": ""
+  },
+  {
+    "id": 189,
+    "category": "",
+    "reason": "Ensured that water supply infrastructure was repaired and extended to underserved communities across Anambra during his tenure.",
+    "source": ""
+  },
+  {
+    "id": 190,
+    "category": "",
+    "reason": "Provided direct intervention funds to improve the Onitsha Head Bridge and other key transport infrastructure linking Anambra to neighbouring states.",
+    "source": ""
+  },
+  {
+    "id": 191,
+    "category": "",
+    "reason": "Promoted inter-faith harmony in Anambra State by engaging both Christian and traditional institutions in governance consultations.",
+    "source": ""
+  },
+  {
+    "id": 192,
+    "category": "",
+    "reason": "Pledged publicly to pay NECO examination fees for inmates in correctional centres across Anambra, demonstrating a commitment to human dignity even for incarcerated citizens.",
+    "source": ""
+  },
+  {
+    "id": 193,
+    "category": "",
+    "reason": "Pushed for Anambra's inclusion in Nigeria's oil-producing state map, which was eventually achieved during his tenure — unlocking additional revenue for the state.",
+    "source": ""
+  },
+  {
+    "id": 194,
+    "category": "",
+    "reason": "Refused to use state resources to fund his personal political campaigns, drawing a firm line between government funds and party politics.",
+    "source": ""
+  },
+  {
+    "id": 195,
+    "category": "",
+    "reason": "Worked with civil society organisations in Anambra to strengthen community policing and grassroots conflict resolution.",
+    "source": ""
+  },
+  {
+    "id": 196,
+    "category": "",
+    "reason": "Promoted women's participation in governance by ensuring female representation in his appointments and advisory councils.",
+    "source": ""
+  },
+  {
+    "id": 197,
+    "category": "",
+    "reason": "Provided solar energy installations to some rural schools and health centres in Anambra that were off the national electricity grid.",
+    "source": ""
+  },
+  {
+    "id": 198,
+    "category": "",
+    "reason": "Built and renovated police stations across Anambra to improve the operational capacity of law enforcement in the state.",
+    "source": ""
+  },
+  {
+    "id": 199,
+    "category": "",
+    "reason": "Worked to standardise teachers' qualifications and remove unqualified staff from public school payrolls.",
+    "source": ""
+  },
+  {
+    "id": 200,
+    "category": "",
+    "reason": "Supported the formation of a state-level investment promotion agency to attract and retain domestic and foreign investment in Anambra.",
+    "source": ""
+  },
+  {
+    "id": 201,
+    "category": "",
+    "reason": "Improved the conditions of Anambra correctional facilities and advocated for the rights and welfare of awaiting-trial prisoners.",
+    "source": ""
+  },
+  {
+    "id": 202,
+    "category": "",
+    "reason": "Ensured consistent distribution of WAEC and NECO results to schools, which historically had been disrupted by administrative dysfunction.",
+    "source": ""
+  },
+  {
+    "id": 203,
+    "category": "",
+    "reason": "Worked to reduce the influence of secret cults in Anambra schools and tertiary institutions through targeted security and counselling programs.",
+    "source": ""
+  },
+  {
+    "id": 204,
+    "category": "",
+    "reason": "Established scholarship programs to send exceptional Anambra students to study in universities abroad and contribute to the state on their return.",
+    "source": ""
+  },
+  {
+    "id": 205,
+    "category": "",
+    "reason": "Introduced periodic stakeholder summits that brought together business leaders, academics, community heads, and government to assess state governance performance.",
+    "source": ""
+  },
+  {
+    "id": 206,
+    "category": "",
+    "reason": "Fought and won multiple legal battles without abandoning democratic institutions — demonstrating that the courts, when properly engaged, can still deliver justice in Nigeria.",
+    "source": ""
+  },
+  {
+    "id": 207,
+    "category": "",
+    "reason": "After leaving office, continued to speak publicly on Nigerian economic governance, offering detailed data-driven analyses rather than retreating into private life like most former governors.",
+    "source": ""
+  },
+  {
+    "id": 208,
+    "category": "",
+    "reason": "Has consistently refused to endorse or enable the politics of ethnic supremacy, positioning himself as a Nigerian leader first — a stance that cost him some regional support but earned him national credibility.",
+    "source": ""
+  },
+  {
+    "id": 209,
+    "category": "",
+    "reason": "Left office in 2014 with a successor who immediately acknowledged that the financial savings left behind by Peter Obi were being actively used for state development — a legacy confirmed not by Peter Obi himself, but by the man who came after him.",
+    "source": ""
+  }
 
+];
+// ⬆⬆⬆  End of sample — paste your 1000 objects above this line  ⬆⬆⬆
 
-  ],
+// Derived helpers (no edits needed below)
+export const categories = Array.from(
+  new Set(reasons.map((r) => r.category))
+).sort();
 
+export const getReasonById = (id: number) =>
+  reasons.find((r) => r.id === id) ?? null;
 
+export const getReasonByIndex = (index: number) =>
+  reasons[((index % reasons.length) + reasons.length) % reasons.length];
 
-
-  "good_works_no_sources": [
-    {
-      "id": 1,
-      "work": "Personally visited and inspected project sites during construction to ensure contractor accountability — an unusual practice for a Nigerian governor."
-    },
-    {
-      "id": 2,
-      "work": "Refused to award contracts to cronies or political loyalists, insisting on competitive and transparent procurement processes."
-    },
-    {
-      "id": 3,
-      "work": "Moved out of the Government House and into a hotel himself rather than spend half a billion naira building a Presidential Lodge for a one-week visit from President Obasanjo."
-    },
-    {
-      "id": 4,
-      "work": "Paid all outstanding contractor debts before leaving office so his successor would inherit a clean financial slate."
-    },
-    {
-      "id": 5,
-      "work": "Established a culture of reading and intellectual engagement in public schools through library development programs."
-    },
-    {
-      "id": 6,
-      "work": "Personally championed the cause of widows and vulnerable citizens within Anambra State through targeted welfare programs."
-    },
-    {
-      "id": 7,
-      "work": "Introduced a performance management system for civil servants that tied promotions to measurable outcomes rather than seniority alone."
-    },
-    {
-      "id": 8,
-      "work": "Engaged youth groups and students directly throughout his tenure, visiting campuses and listening to grievances without the usual layers of protocol."
-    },
-    {
-      "id": 9,
-      "work": "Consistently lived below his political status — flying economy class, staying in modest accommodations, and rejecting the culture of political extravagance."
-    },
-    {
-      "id": 10,
-      "work": "Ensured that WAEC and NECO examination fees were paid for indigent students across Anambra who could not afford them."
-    },
-    {
-      "id": 11,
-      "work": "Championed the rehabilitation of public markets and trading centres in Onitsha and Awka to support small traders and market women."
-    },
-    {
-      "id": 12,
-      "work": "Introduced free medical outreach programs in rural communities that were underserved by existing health infrastructure."
-    },
-    {
-      "id": 13,
-      "work": "Worked to reduce the cost of governance in Anambra by cutting frivolous government expenditures and trimmimg an overly bloated state budget."
-    },
-    {
-      "id": 14,
-      "work": "Promoted the teaching of entrepreneurship and business skills in Anambra secondary schools to prepare students for a productive life beyond certificates."
-    },
-    {
-      "id": 15,
-      "work": "Ensured that government contractors who failed to deliver quality work were held to bond agreements and made to repair or redo poor infrastructure."
-    },
-    {
-      "id": 16,
-      "work": "Implemented a transparent payroll system that eliminated ghost workers from the Anambra State Government payroll."
-    },
-    {
-      "id": 17,
-      "work": "Donated personal funds to the rehabilitation of schools in his community after leaving office, without publicising it as a political act."
-    },
-    {
-      "id": 18,
-      "work": "Regularly engaged with traditional rulers and community leaders across Anambra to resolve disputes and align governance with community priorities."
-    },
-    {
-      "id": 19,
-      "work": "Supported the establishment of agricultural processing zones to add value to farm produce within Anambra rather than exporting raw materials."
-    },
-    {
-      "id": 20,
-      "work": "Actively promoted internally generated revenue by formalising parts of the informal economy, reducing Anambra's dependence on federal allocations."
-    },
-    {
-      "id": 21,
-      "work": "Established skills acquisition centres across Anambra to train unemployed youth in technical and vocational trades."
-    },
-    {
-      "id": 22,
-      "work": "Personally negotiated with international investors to establish businesses in Anambra, presenting the state's data and governance record as its strongest pitch."
-    },
-    {
-      "id": 23,
-      "work": "Facilitated the establishment of cottage industries and small manufacturing businesses in rural Anambra communities."
-    },
-    {
-      "id": 24,
-      "work": "Created a state bursary program that supported bright students from poor families to attend secondary and tertiary education."
-    },
-    {
-      "id": 25,
-      "work": "Worked to reduce maternal mortality in Anambra through targeted funding of midwifery services and rural health outreach."
-    },
-    {
-      "id": 26,
-      "work": "Championed the digitisation of government records in Anambra to improve transparency and reduce the possibility of document manipulation."
-    },
-    {
-      "id": 27,
-      "work": "Helped reconstruct the state radio service and public broadcasting infrastructure that had been looted and burned before his assumption of office."
-    },
-    {
-      "id": 28,
-      "work": "Introduced public accountability forums where citizens could directly question government officials on project delivery."
-    },
-    {
-      "id": 29,
-      "work": "Supported local Anambra artisans and craft makers by creating market linkages and exhibition opportunities."
-    },
-    {
-      "id": 30,
-      "work": "Ensured that water supply infrastructure was repaired and extended to underserved communities across Anambra during his tenure."
-    },
-    {
-      "id": 31,
-      "work": "Provided direct intervention funds to improve the Onitsha Head Bridge and other key transport infrastructure linking Anambra to neighbouring states."
-    },
-    {
-      "id": 32,
-      "work": "Promoted inter-faith harmony in Anambra State by engaging both Christian and traditional institutions in governance consultations."
-    },
-    {
-      "id": 33,
-      "work": "Pledged publicly to pay NECO examination fees for inmates in correctional centres across Anambra, demonstrating a commitment to human dignity even for incarcerated citizens."
-    },
-    {
-      "id": 34,
-      "work": "Pushed for Anambra's inclusion in Nigeria's oil-producing state map, which was eventually achieved during his tenure — unlocking additional revenue for the state."
-    },
-    {
-      "id": 35,
-      "work": "Refused to use state resources to fund his personal political campaigns, drawing a firm line between government funds and party politics."
-    },
-    {
-      "id": 36,
-      "work": "Worked with civil society organisations in Anambra to strengthen community policing and grassroots conflict resolution."
-    },
-    {
-      "id": 37,
-      "work": "Promoted women's participation in governance by ensuring female representation in his appointments and advisory councils."
-    },
-    {
-      "id": 38,
-      "work": "Provided solar energy installations to some rural schools and health centres in Anambra that were off the national electricity grid."
-    },
-    {
-      "id": 39,
-      "work": "Built and renovated police stations across Anambra to improve the operational capacity of law enforcement in the state."
-    },
-    {
-      "id": 40,
-      "work": "Worked to standardise teachers' qualifications and remove unqualified staff from public school payrolls."
-    },
-    {
-      "id": 41,
-      "work": "Supported the formation of a state-level investment promotion agency to attract and retain domestic and foreign investment in Anambra."
-    },
-    {
-      "id": 42,
-      "work": "Improved the conditions of Anambra correctional facilities and advocated for the rights and welfare of awaiting-trial prisoners."
-    },
-    {
-      "id": 43,
-      "work": "Ensured consistent distribution of WAEC and NECO results to schools, which historically had been disrupted by administrative dysfunction."
-    },
-    {
-      "id": 44,
-      "work": "Worked to reduce the influence of secret cults in Anambra schools and tertiary institutions through targeted security and counselling programs."
-    },
-    {
-      "id": 45,
-      "work": "Established scholarship programs to send exceptional Anambra students to study in universities abroad and contribute to the state on their return."
-    },
-    {
-      "id": 46,
-      "work": "Introduced periodic stakeholder summits that brought together business leaders, academics, community heads, and government to assess state governance performance."
-    },
-    {
-      "id": 47,
-      "work": "Fought and won multiple legal battles without abandoning democratic institutions — demonstrating that the courts, when properly engaged, can still deliver justice in Nigeria."
-    },
-    {
-      "id": 48,
-      "work": "After leaving office, continued to speak publicly on Nigerian economic governance, offering detailed data-driven analyses rather than retreating into private life like most former governors."
-    },
-    {
-      "id": 49,
-      "work": "Has consistently refused to endorse or enable the politics of ethnic supremacy, positioning himself as a Nigerian leader first — a stance that cost him some regional support but earned him national credibility."
-    },
-    {
-      "id": 50,
-      "work": "Left office in 2014 with a successor who immediately acknowledged that the financial savings left behind by Peter Obi were being actively used for state development — a legacy confirmed not by Peter Obi himself, but by the man who came after him."
-    }
-  ]
-}
-
-
-
-
-
-
-
-
-
-
-
-{
-  "subject": "Peter Gregory Obi",
-  "description": "50 additional verifiable reasons why a Nigerian voter should vote Peter Obi — spanning his early life, young adult career, governorship, and post-governor period",
-  "additional_sourced_reasons": [
-    
-  ]
-}
+export const searchReasons = (query: string, category?: string) => {
+  const q = query.toLowerCase();
+  return reasons.filter((r) => {
+    const matchesQuery =
+      !q ||
+      r.reason.toLowerCase().includes(q) ||
+      r.category.toLowerCase().includes(q);
+    const matchesCategory = !category || r.category === category;
+    return matchesQuery && matchesCategory;
+  });
+};
