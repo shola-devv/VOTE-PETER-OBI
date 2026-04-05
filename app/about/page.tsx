@@ -62,7 +62,7 @@ export default function AboutPage() {
             <p>
               This project was born out of frustration with that reality. We believe that
               Peter Gregory Obi's record — as a businessman, as Governor of Anambra State,
-              as a public servant — deserves to be seen clearly, without noise. So we
+              as a public servant — deserves to be seen clearly, without noise. So we have
               started collecting reasons, each backed by a source you can verify yourself.
             </p>
             <p>

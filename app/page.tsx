@@ -64,7 +64,7 @@ export default function Home() {
   const progress = ((index + 1) / total) * 100;
 
   return (
-    <div className="relative z-0 h-[calc(100vh-64px)] flex flex-col overflow-hidden bg-[#0a0f1e]">
+   <div className="relative z-0 h-[calc(100svh-64px)] flex flex-col overflow-hidden bg-[#0a0f1e]">
 
       {/* Compact header strip */}
       <div className="flex-shrink-0 px-4 sm:px-8 pt-4 pb-2">

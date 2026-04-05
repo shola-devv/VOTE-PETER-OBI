@@ -45,7 +45,7 @@ export default function IndexPage() {
       </div>
 
       {/* ── Search bar ── */}
-      <div className="sticky top-16 z-30 bg-[#0a0f1e]/90 backdrop-blur-md border-b border-white/10">
+      <div className="sticky top-16 z-30 bg-[#0a0f1e]/95 backdrop-blur-md border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex gap-2">
           <div className="relative flex-1">
             <Search
@@ -87,7 +87,7 @@ export default function IndexPage() {
         </div>
 
         {/* Category pills - always visible on mobile, toggleable on desktop */}
-        <div className={`border-t border-white/10 px-4 sm:px-6 py-3 max-w-7xl mx-auto ${filterOpen ? 'block' : 'sm:hidden'}`}>
+     <div className={`border-t border-white/10 px-4 sm:px-6 py-3 max-w-7xl mx-auto ${filterOpen ? 'block' : 'block sm:hidden'}`}>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setCategory("")}

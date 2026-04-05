@@ -101,7 +101,7 @@ const valid =
             Already submitted
           </h2>
           <p className="text-white/50 leading-relaxed">
-            You've already added a reason from this browser. One submission per
+            You've already added a reason. One submission per
             person — thanks for contributing!
           </p>
         </div>
