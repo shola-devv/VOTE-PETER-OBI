@@ -23,15 +23,18 @@ export const reasons: Reason[] = [
     },
     {
       "id": 2,
-     "category": "Political Integrity",
-      "reason": "The PDP filed 425 witnesses in the case against him as a deliberate delaying tactic. He outlasted all of them in court. That level of patience and persistence is not something most Nigerian politicians would even attempt.",
-      "source": "https://www.samuelmarete.com/2023/02/24/the-incredible-candidacy-of-peter-obi/"
+     "category": "Fiscal Management",
+      "reason": "Anambra State became the first state in Nigeria to commence Sub-Sovereign Wealth savings — the first of its kind in all of Sub-Saharan Africa — under Peter Obi's administration.",
+      "source": "https://dnbstories.com/2022/06/list-of-peter-obis-achievements-in-anambra-as-governor.html"
+   
     },
     {
       "id": 3,
-      "category": "Early Life",
-      "reason": "His father, Josephat Obi, owned the popular Ideal Soul Super Market in Onitsha, exposing Peter Obi to entrepreneurship and business discipline from a very young age.",
-      "source": "https://citizendiaryng.com/peter-obi-biography/"
+      "category": "Fiscal Management",
+      "reason": "The Nigerian Debt Management Office (DMO) rated Anambra as the least indebted state in Nigeria during his tenure, despite visible and measurable achievements across multiple sectors.",
+      "source": "https://www.vanguardngr.com/2018/10/peter-obi-a-complete-profile/"
+
+     
     },
     {
       "id": 4,
@@ -53,9 +56,10 @@ export const reasons: Reason[] = [
     },
     {
       "id": 7,
-      "category": "Early Life",
-      "reason": "From his earliest years, he was described as calm, observant, and thoughtful — traits that analysts have consistently pointed to as defining his measured and deliberate leadership style.",
-      "source": "https://novaline.com.ng/peter-obi-biography/"
+
+       "category": "Fiscal Management",
+      "reason": "He left office with the equivalent of $500 million in investments in both local and foreign currency for Anambra State, including $156 million in dollar-denominated bonds — at a time when many other governors were leaving enormous debts.",
+      "source": "https://www.vanguardngr.com/2018/10/peter-obi-a-complete-profile/"
     },
     {
       "id": 8,
@@ -151,15 +155,16 @@ export const reasons: Reason[] = [
     },
     {
       "id": 23,
-      "category": "Fiscal Management",
-      "reason": "Anambra State became the first state in Nigeria to commence Sub-Sovereign Wealth savings — the first of its kind in all of Sub-Saharan Africa — under Peter Obi's administration.",
-      "source": "https://dnbstories.com/2022/06/list-of-peter-obis-achievements-in-anambra-as-governor.html"
+      
+      "category": "Political Integrity",
+      "reason": "The PDP filed 425 witnesses in the case against him as a deliberate delaying tactic. He outlasted all of them in court. That level of patience and persistence is not something most Nigerian politicians would even attempt.",
+      "source": "https://www.samuelmarete.com/2023/02/24/the-incredible-candidacy-of-peter-obi/"
     },
     {
       "id": 24,
-      "category": "Fiscal Management",
-      "reason": "The Nigerian Debt Management Office (DMO) rated Anambra as the least indebted state in Nigeria during his tenure, despite visible and measurable achievements across multiple sectors.",
-      "source": "https://www.vanguardngr.com/2018/10/peter-obi-a-complete-profile/"
+      "category": "Early Life",
+      "reason": "His father, Josephat Obi, owned the popular Ideal Soul Super Market in Onitsha, exposing Peter Obi to entrepreneurship and business discipline from a very young age.",
+      "source": "https://citizendiaryng.com/peter-obi-biography/"
     },
     {
       "id": 25,
@@ -169,9 +174,9 @@ export const reasons: Reason[] = [
     },
     {
       "id": 26,
-      "category": "Fiscal Management",
-      "reason": "He left office with the equivalent of $500 million in investments in both local and foreign currency for Anambra State, including $156 million in dollar-denominated bonds — at a time when many other governors were leaving enormous debts.",
-      "source": "https://www.vanguardngr.com/2018/10/peter-obi-a-complete-profile/"
+        "category": "Early Life",
+      "reason": "From his earliest years, he was described as calm, observant, and thoughtful — traits that analysts have consistently pointed to as defining his measured and deliberate leadership style.",
+      "source": "https://novaline.com.ng/peter-obi-biography/"
     },
     {
       "id": 27,
