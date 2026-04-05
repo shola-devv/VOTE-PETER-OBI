@@ -39,7 +39,7 @@ export default function IndexPage() {
             All Reasons
           </h1>
           <p className="text-white/40 text-sm">
-            {reasons.length.toLocaleString()} evidence-backed reasons — searchable and filterable
+            {reasons.length.toLocaleString()} + evidence-backed reasons — searchable and filterable
           </p>
         </div>
       </div>

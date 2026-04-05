@@ -124,7 +124,7 @@ export default function Home() {
                   <CategoryBadge category={reason.category} />
                 </div>
 
-                <blockquote className="font-playfair text-base sm:text-lg leading-relaxed text-white/90 border-l-2 border-[#00c853]/40 pl-4">
+                <blockquote className="font-playfair font-bold text-xl sm:text-2xl md:text-2xl leading-relaxed text-white/90 border-l-2 border-[#00c853]/40 pl-4">
                   {reason.reason}
                 </blockquote>
               </div>

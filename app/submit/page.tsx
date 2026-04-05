@@ -1,7 +1,9 @@
 // /app/submit/page.tsx
 "use client";
-import { useState } from "react";
-import { Send, CheckCircle2, AlertCircle, Lightbulb } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Send, CheckCircle2, AlertCircle, Lightbulb, Ban } from "lucide-react";
+
+const SUBMISSION_KEY = "submit_reason_token";
 
 const CATEGORIES = [
   "Economic Leadership",
@@ -22,16 +24,40 @@ const CATEGORIES = [
 type Status = "idle" | "loading" | "success" | "error" | "duplicate";
 
 export default function SubmitPage() {
-  const [reason,   setReason]   = useState("");
-  const [category, setCategory] = useState("");
-  const [source,   setSource]   = useState("");
-  const [status,   setStatus]   = useState<Status>("idle");
-  const [message,  setMessage]  = useState("");
+  const [reason,      setReason]      = useState("");
+  const [category,   setCategory]    = useState("");
+  const [source,     setSource]      = useState("");
+  const [status,     setStatus]      = useState<Status>("idle");
+  const [message,    setMessage]     = useState("");
+  const [alreadySubmitted, setAlreadySubmitted] = useState(false);
 
-  const valid =
-    reason.trim().length >= 30 &&
-    category.length > 0 &&
-    source.trim().length > 0;
+  // ✅ Check for existing token on mount
+  useEffect(() => {
+    if (localStorage.getItem(SUBMISSION_KEY)) {
+      setAlreadySubmitted(true);
+    }
+  }, []);
+
+
+  const isValidUrl = (val: string): boolean => {
+  try {
+    const url = new URL(val.trim());
+    return (
+      (url.protocol === "http:" || url.protocol === "https:") &&
+      url.hostname.includes(".") &&        // must have a real TLD
+      url.hostname.length > 3 &&           // rules out "a.b"
+      !url.hostname.startsWith(".")  &&    // no leading dot
+      url.pathname !== undefined           // just a sanity check
+    );
+  } catch {
+    return false;
+  }
+};
+
+const valid =
+  reason.trim().length >= 30 &&
+  category.length > 0 &&
+  isValidUrl(source);
 
   const submit = async () => {
     if (!valid) return;
@@ -52,6 +78,8 @@ export default function SubmitPage() {
         setStatus("error");
         setMessage(data.message ?? "Something went wrong. Please try again.");
       } else {
+        // ✅ Save token so the user can't submit again from this browser
+        localStorage.setItem(SUBMISSION_KEY, "1");
         setStatus("success");
         setReason("");
         setCategory("");
@@ -62,6 +90,24 @@ export default function SubmitPage() {
       setMessage("Network error. Please check your connection.");
     }
   };
+
+  // ✅ Already-submitted banner (shown instead of form)
+  if (alreadySubmitted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="max-w-md w-full text-center">
+          <Ban size={48} className="mx-auto text-[#ffd54f] mb-5" />
+          <h2 className="font-playfair font-black text-3xl text-white mb-3">
+            Already submitted
+          </h2>
+          <p className="text-white/50 leading-relaxed">
+            You've already added a reason from this browser. One submission per
+            person — thanks for contributing!
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (status === "success") {
     return (
@@ -75,7 +121,6 @@ export default function SubmitPage() {
             Your reason has been submitted for review. Once verified it will be
             added to the list.
           </p>
-        
         </div>
       </div>
     );
@@ -145,24 +190,33 @@ export default function SubmitPage() {
             </p>
           </div>
 
-          {/* Source */}
-          <div>
-            <label className="block text-sm font-medium text-white/70 mb-2">
-              Source URL <span className="text-[#00c853]">*</span>
-            </label>
-            <input
-  type="url"
-  value={source}
-  onChange={(e) => setSource(e.target.value)}
-  placeholder="https://…"
-  minLength={10}
-  maxLength={2048}
-  className="search-input w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/25"
-/>
-            <p className="text-xs text-white/30 mt-1">
-              Link to a news article, Wikipedia page, government record, or other credible source.
-            </p>
-          </div>
+         {/* Source */}
+<div>
+  <label className="block text-sm font-medium text-white/70 mb-2">
+    Source URL <span className="text-[#00c853]">*</span>
+  </label>
+  <input
+    type="url"
+    value={source}
+    onChange={(e) => setSource(e.target.value)}
+    placeholder="https://…"
+    maxLength={2048}
+    className={`search-input w-full px-4 py-3 rounded-xl text-sm text-white placeholder-white/25 transition-colors ${
+      source.length > 0 && !isValidUrl(source)
+        ? "border border-red-500/50"
+        : ""
+    }`}
+  />
+  {source.length > 0 && !isValidUrl(source) ? (
+    <p className="text-xs text-red-400 mt-1">
+      Please enter a valid URL starting with https:// or http://
+    </p>
+  ) : (
+    <p className="text-xs text-white/30 mt-1">
+      Link to a news article, Wikipedia page, government record, or other credible source.
+    </p>
+  )}
+</div>
 
           {/* Error / duplicate message */}
           {(status === "error" || status === "duplicate") && (
