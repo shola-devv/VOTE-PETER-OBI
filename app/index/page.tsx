@@ -86,25 +86,25 @@ export default function IndexPage() {
           </button>
         </div>
 
-        {/* Category pills */}
-        {filterOpen && (
+        {/* Category pills - hidden on mobile by default, visible with filter toggle on larger screens */}
+        {(filterOpen || true) && (
           <div className="border-t border-white/10 px-4 sm:px-6 py-3 max-w-7xl mx-auto">
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 overflow-x-auto pb-2">
               <button
                 onClick={() => setCategory("")}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all flex-shrink-0 ${
                   !category
                     ? "bg-[#00c853]/20 border-[#00c853]/40 text-[#00c853]"
                     : "bg-white/5 border-white/10 text-white/50 hover:border-white/30 hover:text-white/80"
                 }`}
               >
-                All categories
+                All
               </button>
               {categories.map((c) => (
                 <button
                   key={c}
                   onClick={() => setCategory(c === category ? "" : c)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all flex-shrink-0 whitespace-nowrap ${
                     category === c
                       ? "bg-[#00c853]/20 border-[#00c853]/40 text-[#00c853]"
                       : "bg-white/5 border-white/10 text-white/50 hover:border-white/30 hover:text-white/80"
