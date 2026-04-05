@@ -79,43 +79,41 @@ export default function IndexPage() {
             }`}
           >
             <SlidersHorizontal size={14} />
-            <span className="hidden sm:inline">Filter</span>
+            <span>Filter</span>
             {category && (
               <span className="w-1.5 h-1.5 rounded-full bg-[#00c853] flex-shrink-0" />
             )}
           </button>
         </div>
 
-        {/* Category pills - hidden on mobile by default, visible with filter toggle on larger screens */}
-        {(filterOpen || true) && (
-          <div className="border-t border-white/10 px-4 sm:px-6 py-3 max-w-7xl mx-auto">
-            <div className="flex flex-wrap gap-2 overflow-x-auto pb-2">
+        {/* Category pills - always visible on mobile, toggleable on desktop */}
+        <div className={`border-t border-white/10 px-4 sm:px-6 py-3 max-w-7xl mx-auto ${filterOpen ? 'block' : 'sm:hidden'}`}>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setCategory("")}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                !category
+                  ? "bg-[#00c853]/20 border-[#00c853]/40 text-[#00c853]"
+                  : "bg-white/5 border-white/10 text-white/50 hover:border-white/30 hover:text-white/80"
+              }`}
+            >
+              All categories
+            </button>
+            {categories.map((c) => (
               <button
-                onClick={() => setCategory("")}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all flex-shrink-0 ${
-                  !category
+                key={c}
+                onClick={() => setCategory(c === category ? "" : c)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                  category === c
                     ? "bg-[#00c853]/20 border-[#00c853]/40 text-[#00c853]"
                     : "bg-white/5 border-white/10 text-white/50 hover:border-white/30 hover:text-white/80"
                 }`}
               >
-                All
+                {c}
               </button>
-              {categories.map((c) => (
-                <button
-                  key={c}
-                  onClick={() => setCategory(c === category ? "" : c)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all flex-shrink-0 whitespace-nowrap ${
-                    category === c
-                      ? "bg-[#00c853]/20 border-[#00c853]/40 text-[#00c853]"
-                      : "bg-white/5 border-white/10 text-white/50 hover:border-white/30 hover:text-white/80"
-                  }`}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
+            ))}
           </div>
-        )}
+        </div>
       </div>
 
       {/* ── Results ── */}
