@@ -122,6 +122,18 @@ export default function AboutPage() {
           </div>
         </div>
       </div>
+    {/* Voters Card CTA */}
+<div className="max-w-3xl mx-auto px-4 sm:px-6 pb-14 text-center">
+  
+    href="https://cvr.inecnigeria.org"
+    target="_blank"
+    rel="noopener noreferrer nofollow"
+    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#ffd54f]/10 border border-[#ffd54f]/30 text-[#ffd54f] font-semibold text-sm hover:bg-[#ffd54f]/20 transition-colors"
+  >
+     Get your Voters Card
+  </a>
+</div>
+
     </div>
   );
 }

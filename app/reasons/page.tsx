@@ -52,13 +52,14 @@ export default function IndexPage() {
               size={16}
               className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none"
             />
-            <input
-              ref={searchRef}
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search reasons, categories…"
-              className="search-input w-full pl-9 pr-9 py-2.5 rounded-xl text-sm text-white placeholder-white/30"
-            />
+           <input
+  ref={searchRef}
+  value={query}
+  onChange={(e) => setQuery(e.target.value)}
+  onKeyDown={(e) => { if (e.key === "Enter") setFilterOpen(false); }}
+  placeholder="Search reasons, categories…"
+  className="search-input w-full pl-9 pr-9 py-2.5 rounded-xl text-sm text-white placeholder-white/30"
+/>
             {query && (
               <button
                 onClick={() => setQuery("")}
@@ -87,7 +88,7 @@ export default function IndexPage() {
         </div>
 
         {/* Category pills - always visible on mobile, toggleable on desktop */}
-     <div className={`border-t border-white/10 px-4 sm:px-6 py-3 max-w-7xl mx-auto ${filterOpen ? 'block' : 'block sm:hidden'}`}>
+     <div className={`border-t border-white/10 px-4 sm:px-6 py-3 max-w-7xl mx-auto ${filterOpen ? 'block' : 'hidden'}`}>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setCategory("")}
