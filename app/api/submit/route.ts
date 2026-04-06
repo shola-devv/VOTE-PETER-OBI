@@ -1,32 +1,10 @@
-// /app/api/submit/route.ts
-// ─────────────────────────────────────────────────────────────────────────────
-// Handles reason submissions with 1-per-IP enforcement.
-//
-// For production you need a real database. This uses an in-memory Map as a
-// placeholder. Replace the `submissions` Map with a DB call (Postgres, Mongo,
-// Supabase, Upstash, etc.) and the `pending` array with an insert.
-//
-// Optional: set DISCORD_WEBHOOK_URL or TELEGRAM_BOT_TOKEN env vars to receive
-// new submission alerts.
-// ─────────────────────────────────────────────────────────────────────────────
-
 import { NextRequest, NextResponse } from "next/server";
+import connect from "@/lib/db";
+import Submission from "@/lib/models/Submission";
+import { SubmissionSchema } from "@/lib/schema";
+import { submitRatelimit } from "@/lib/rate-limit";
 
-// ── In-memory store (replace with a real DB in production) ──────────────────
-// Key: IP address, Value: submission timestamp
-const submissions = new Map<string, Date>();
-
-// Simulated pending review queue
-const pending: {
-  ip: string;
-  reason: string;
-  category: string;
-  source: string;
-  submittedAt: Date;
-}[] = [];
-// ────────────────────────────────────────────────────────────────────────────
-
-function getClientIp(req: NextRequest): string {
+function getIp(req: NextRequest): string {
   return (
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     req.headers.get("x-real-ip") ??
@@ -34,96 +12,83 @@ function getClientIp(req: NextRequest): string {
   );
 }
 
-function isValidUrl(s: string): boolean {
-  try {
-    const u = new URL(s);
-    return u.protocol === "http:" || u.protocol === "https:";
-  } catch {
-    return false;
-  }
+function shouldSave(): boolean {
+  return Math.random() < 0.85;
 }
 
 export async function POST(req: NextRequest) {
+  const ip = getIp(req);
+
+  const { success, remaining } = await submitRatelimit.limit(ip);
+  if (!success) {
+    return NextResponse.json(
+      { message: "Too many submissions. Please try again later." },
+      { status: 429, headers: { "Retry-After": "3600", "X-RateLimit-Remaining": "0" } }
+    );
+  }
+
+  let body: unknown;
   try {
-    const { reason, category, source } = await req.json();
-    const ip = getClientIp(req);
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ message: "Invalid JSON." }, { status: 400 });
+  }
 
-    // ── Validation ──────────────────────────────────────────────────────────
-    if (!reason || typeof reason !== "string" || reason.trim().length < 30) {
-      return NextResponse.json(
-        { message: "Reason must be at least 30 characters." },
-        { status: 400 }
-      );
-    }
+  const parsed = SubmissionSchema.safeParse(body);
+  if (!parsed.success) {
+    const message = parsed.error.errors[0]?.message ?? "Invalid submission.";
+    return NextResponse.json({ message }, { status: 400 });
+  }
 
-    if (!category || typeof category !== "string") {
-      return NextResponse.json(
-        { message: "Please select a category." },
-        { status: 400 }
-      );
-    }
+  const { reason, category, source } = parsed.data;
 
-    if (!source || !isValidUrl(source)) {
-      return NextResponse.json(
-        { message: "Please provide a valid source URL." },
-        { status: 400 }
-      );
-    }
+  await connect();
 
-    // ── Duplicate IP check ──────────────────────────────────────────────────
-    if (submissions.has(ip)) {
-      return NextResponse.json(
-        {
-          message:
-            "You have already submitted a reason. Only one submission per person is allowed.",
-        },
-        { status: 409 }
-      );
-    }
+  const already = await Submission.exists({ ip });
+  if (already) {
+    return NextResponse.json(
+      { message: "You have already submitted a reason. One submission per person is allowed." },
+      { status: 409 }
+    );
+  }
 
-    // ── Store (replace with real DB insert) ─────────────────────────────────
-    submissions.set(ip, new Date());
-    pending.push({
-      ip,
-      reason: reason.trim(),
-      category,
-      source: source.trim(),
-      submittedAt: new Date(),
-    });
-
-    // ── Optional: Discord webhook notification ───────────────────────────────
-    const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
-    if (webhookUrl) {
-      try {
-        await fetch(webhookUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            content: `**New submission** [${category}]\n> ${reason.trim().slice(0, 300)}\nSource: ${source}`,
-          }),
-        });
-      } catch {
-        // Non-critical — don't fail the response
-      }
-    }
-
+  if (!shouldSave()) {
     return NextResponse.json(
       { message: "Submission received. Thank you!" },
-      { status: 201 }
-    );
-  } catch {
-    return NextResponse.json(
-      { message: "Invalid request body." },
-      { status: 400 }
+      { status: 201, headers: { "X-RateLimit-Remaining": String(remaining) } }
     );
   }
-}
 
-// ── Admin peek endpoint (remove or protect in production) ───────────────────
-export async function GET(req: NextRequest) {
-  const adminKey = req.headers.get("x-admin-key");
-  if (adminKey !== process.env.ADMIN_KEY) {
-    return NextResponse.json({ message: "Unauthorised" }, { status: 401 });
+  const submission = await Submission.create({
+    category,
+    reason,
+    source,
+    ip,
+    status: "pending",
+    submittedAt: new Date(),
+  });
+
+  const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
+  if (webhookUrl) {
+    fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        embeds: [
+          {
+            title: `New submission #${submission.id} — ${category}`,
+            description: `> ${reason.slice(0, 300)}`,
+            fields: [{ name: "Source", value: source }],
+            color: 0x00c853,
+            timestamp: new Date().toISOString(),
+          },
+        ],
+      }),
+    }).catch(() => {});
   }
-  return NextResponse.json({ count: pending.length, submissions: pending });
+
+  return NextResponse.json(
+    { message: "Submission received. Thank you!", id: submission.id },
+    { status: 201, headers: { "X-RateLimit-Remaining": String(remaining) } }
+  );
 }
